@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { MapPin, Phone, Mail, Clock, ExternalLink } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ContactModal } from "./contact-modal"
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { MapPin, Phone, Mail, Clock, ExternalLink } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ContactModal } from "./contact-modal";
 
 const contactInfo = [
   {
@@ -28,17 +28,17 @@ const contactInfo = [
     title: "Режим работы",
     content: "Пн-Пт: 9:00-18:00",
   },
-]
+];
 
 export function Contacts() {
-  const [isContactOpen, setIsContactOpen] = useState(false)
+  const [isContactOpen, setIsContactOpen] = useState(false);
 
   const openInMaps = () => {
     window.open(
       "https://yandex.ru/map-widget/v1/?ll=129.733857%2C62.027739&z=17&pt=129.733857,62.027739,pm2rdm",
-      "_blank",
-    )
-  }
+      "_blank"
+    );
+  };
 
   return (
     <section id="contacts" className="relative py-20 overflow-hidden">
@@ -68,7 +68,11 @@ export function Contacts() {
         <motion.div
           className="absolute top-20 right-20 w-32 h-32 rounded-full border border-teal-200/25 dark:border-teal-500/20"
           animate={{ rotate: 360, scale: [1, 1.1, 1] }}
-          transition={{ duration: 100, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+          transition={{
+            duration: 100,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "linear",
+          }}
         />
         <motion.div
           className="absolute bottom-20 left-20 w-24 h-24 border border-cyan-200/25 dark:border-cyan-500/20 rotate-45"
@@ -85,7 +89,9 @@ export function Contacts() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">Контакты</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+            Контакты
+          </h2>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             Свяжитесь с нами для обсуждения вашего проекта
           </p>
@@ -98,7 +104,9 @@ export function Contacts() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Свяжитесь с нами</h3>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
+              Свяжитесь с нами
+            </h3>
 
             <div className="grid sm:grid-cols-1 gap-6 mb-8 cursor-pointer">
               {contactInfo.map((item, index) => (
@@ -112,8 +120,12 @@ export function Contacts() {
                       <div className="flex items-start space-x-4">
                         {item.icon}
                         <div>
-                          <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{item.title}</h4>
-                          <p className="text-gray-600 dark:text-gray-300">{item.content}</p>
+                          <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
+                            {item.title}
+                          </h4>
+                          <p className="text-gray-600 dark:text-gray-300">
+                            {item.content}
+                          </p>
                         </div>
                       </div>
                     </CardContent>
@@ -122,7 +134,11 @@ export function Contacts() {
               ))}
             </div>
 
-            <Button size="lg" onClick={() => setIsContactOpen(true)} className="w-full sm:w-auto">
+            <Button
+              size="lg"
+              onClick={() => setIsContactOpen(true)}
+              className="w-full sm:w-auto"
+            >
               Оставить заявку
             </Button>
           </motion.div>
@@ -151,10 +167,19 @@ export function Contacts() {
                 <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-lg p-4 shadow-lg">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Наш офис</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">г. Якутск, ул. Аммосова, 8</p>
+                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                        Наш офис
+                      </h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        г. Якутск, ул. Аммосова, 8
+                      </p>
                     </div>
-                    <Button onClick={openInMaps} variant="outline" size="sm" className="ml-2 flex-shrink-0">
+                    <Button
+                      onClick={openInMaps}
+                      variant="outline"
+                      size="sm"
+                      className="ml-2 flex-shrink-0"
+                    >
                       <ExternalLink className="h-4 w-4" />
                     </Button>
                   </div>
@@ -165,7 +190,10 @@ export function Contacts() {
         </div>
       </div>
 
-      <ContactModal isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
+      <ContactModal
+        isOpen={isContactOpen}
+        onClose={() => setIsContactOpen(false)}
+      />
     </section>
-  )
+  );
 }

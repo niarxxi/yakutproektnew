@@ -1,26 +1,28 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useMemo } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { useProjects } from "@/hooks/use-projects"
-import { ProjectModal } from "./project-modal"
-import type { ProjectImage } from "@/types/project"
-import { Building2 } from "lucide-react"
+import { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useProjects } from "@/hooks/use-projects";
+import { ProjectModal } from "./project-modal";
+import type { ProjectImage } from "@/types/project";
+import { Building2 } from "lucide-react";
 
 export function Projects() {
-  const { projectImages, projectCategories } = useProjects()
-  const [selectedCategory, setSelectedCategory] = useState("all")
-  const [selectedProject, setSelectedProject] = useState<ProjectImage | null>(null)
-  const [visibleCount, setVisibleCount] = useState(8)
-  const [mounted, setMounted] = useState(false)
+  const { projectImages, projectCategories } = useProjects();
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedProject, setSelectedProject] = useState<ProjectImage | null>(
+    null
+  );
+  const [visibleCount, setVisibleCount] = useState(8);
+  const [mounted, setMounted] = useState(false);
 
   // Генерируем стабильные случайные значения только после монтирования
   const particleData = useMemo(() => {
-    if (!mounted) return []
-    
+    if (!mounted) return [];
+
     return Array.from({ length: 25 }, (_, i) => ({
       id: i,
       initialX: Math.random() * 1920,
@@ -29,37 +31,43 @@ export function Projects() {
       targetY: Math.random() * 1080,
       duration: Math.random() * 3 + 2,
       delay: Math.random() * 2,
-    }))
-  }, [mounted])
+    }));
+  }, [mounted]);
 
   const buildingIconData = useMemo(() => {
-    if (!mounted) return []
-    
+    if (!mounted) return [];
+
     return Array.from({ length: 8 }, (_, i) => ({
       id: i,
       top: Math.random() * 100,
       left: Math.random() * 100,
       duration: 20 + i * 3,
       delay: i * 2,
-    }))
-  }, [mounted])
+    }));
+  }, [mounted]);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleCategorySelect = (event: CustomEvent) => {
-      const { category } = event.detail
-      setSelectedCategory(category)
-    }
+      const { category } = event.detail;
+      setSelectedCategory(category);
+    };
 
-    window.addEventListener("selectProjectCategory", handleCategorySelect as EventListener)
+    window.addEventListener(
+      "selectProjectCategory",
+      handleCategorySelect as EventListener
+    );
 
     return () => {
-      window.removeEventListener("selectProjectCategory", handleCategorySelect as EventListener)
-    }
-  }, [])
+      window.removeEventListener(
+        "selectProjectCategory",
+        handleCategorySelect as EventListener
+      );
+    };
+  }, []);
 
   const filteredProjects =
     selectedCategory === "all"
@@ -73,23 +81,27 @@ export function Projects() {
             sport: "Спортивные сооружения",
             plans: "Генеральные планы",
             agriculture: "Сельскохозяйственные объекты",
-          }
-          return project.category === categoryMap[selectedCategory]
-        })
+          };
+          return project.category === categoryMap[selectedCategory];
+        });
 
-  const projectsToShow = selectedCategory === "all" ? filteredProjects.slice(0, visibleCount) : filteredProjects
-  const hasMoreProjects = selectedCategory === "all" && visibleCount < filteredProjects.length
+  const projectsToShow =
+    selectedCategory === "all"
+      ? filteredProjects.slice(0, visibleCount)
+      : filteredProjects;
+  const hasMoreProjects =
+    selectedCategory === "all" && visibleCount < filteredProjects.length;
 
   const handleLoadMore = () => {
-    setVisibleCount((prev) => prev + 8)
-  }
+    setVisibleCount((prev) => prev + 8);
+  };
 
   const handleCategoryChange = (categoryId: string) => {
-    setSelectedCategory(categoryId)
+    setSelectedCategory(categoryId);
     if (categoryId === "all") {
-      setVisibleCount(8)
+      setVisibleCount(8);
     }
-  }
+  };
 
   return (
     <section id="projects" className="relative py-20 overflow-hidden">
@@ -127,37 +139,46 @@ export function Projects() {
         <motion.div
           className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] rounded-full border-2 border-indigo-200/30 dark:border-indigo-500/20"
           animate={{ rotate: 360 }}
-          transition={{ duration: 120, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+          transition={{
+            duration: 120,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "linear",
+          }}
         />
         <motion.div
           className="absolute -bottom-[15%] -left-[15%] w-[50%] h-[50%] rounded-full border-2 border-blue-200/30 dark:border-blue-500/20"
           animate={{ rotate: -360 }}
-          transition={{ duration: 150, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+          transition={{
+            duration: 150,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "linear",
+          }}
         />
 
         {/* Архитектурные иконки - рендерятся только после монтирования */}
-        {mounted && buildingIconData.map((icon) => (
-          <motion.div
-            key={icon.id}
-            className="absolute opacity-[0.05] dark:opacity-[0.1]"
-            style={{
-              top: `${icon.top}%`,
-              left: `${icon.left}%`,
-            }}
-            animate={{
-              y: [0, -30, 0],
-              rotate: [0, 180, 360],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              duration: icon.duration,
-              repeat: Number.POSITIVE_INFINITY,
-              delay: icon.delay,
-            }}
-          >
-            <Building2 className="w-12 h-12 text-indigo-500" />
-          </motion.div>
-        ))}
+        {mounted &&
+          buildingIconData.map((icon) => (
+            <motion.div
+              key={icon.id}
+              className="absolute opacity-[0.05] dark:opacity-[0.1]"
+              style={{
+                top: `${icon.top}%`,
+                left: `${icon.left}%`,
+              }}
+              animate={{
+                y: [0, -30, 0],
+                rotate: [0, 180, 360],
+                scale: [1, 1.2, 1],
+              }}
+              transition={{
+                duration: icon.duration,
+                repeat: Number.POSITIVE_INFINITY,
+                delay: icon.delay,
+              }}
+            >
+              <Building2 className="w-12 h-12 text-indigo-500" />
+            </motion.div>
+          ))}
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
@@ -168,7 +189,9 @@ export function Projects() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">Наши проекты</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+            Наши проекты
+          </h2>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             Более 1000 реализованных проектов различной сложности и назначения
           </p>
@@ -208,7 +231,10 @@ export function Projects() {
         </motion.div>
 
         {/* Projects Grid */}
-        <motion.div layout className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <motion.div
+          layout
+          className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+        >
           <AnimatePresence>
             {projectsToShow.map((project, index) => (
               <motion.div
@@ -230,10 +256,10 @@ export function Projects() {
                       className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                       loading="lazy"
                       onError={(e) => {
-                        const target = e.target as HTMLImageElement
+                        const target = e.target as HTMLImageElement;
                         target.src = `/placeholder.svg?height=400&width=600&text=${encodeURIComponent(
-                          project.category,
-                        )}`
+                          project.category
+                        )}`;
                       }}
                     />
                   </div>
@@ -241,8 +267,12 @@ export function Projects() {
                     <Badge variant="outline" className="mb-2">
                       {project.category}
                     </Badge>
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">{project.title}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{project.description}</p>
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
+                      {project.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+                      {project.description}
+                    </p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -258,7 +288,12 @@ export function Projects() {
             transition={{ duration: 0.6 }}
             className="text-center mt-12"
           >
-            <Button size="lg" variant="outline" onClick={handleLoadMore} className="px-8 py-3">
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={handleLoadMore}
+              className="px-8 py-3"
+            >
               Показать больше проектов
               <Badge variant="secondary" className="ml-2">
                 +{Math.min(8, filteredProjects.length - visibleCount)}
@@ -271,13 +306,23 @@ export function Projects() {
         )}
 
         {projectsToShow.length === 0 && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
-            <p className="text-gray-600 dark:text-gray-300">Проекты в данной категории не найдены</p>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-12"
+          >
+            <p className="text-gray-600 dark:text-gray-300">
+              Проекты в данной категории не найдены
+            </p>
           </motion.div>
         )}
       </div>
 
-      <ProjectModal project={selectedProject} isOpen={!!selectedProject} onClose={() => setSelectedProject(null)} />
+      <ProjectModal
+        project={selectedProject}
+        isOpen={!!selectedProject}
+        onClose={() => setSelectedProject(null)}
+      />
     </section>
-  )
+  );
 }

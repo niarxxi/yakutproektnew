@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react"
-import { motion, useScroll, useTransform } from "framer-motion"
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 export function BackgroundTransition() {
   const [sectionHeights, setSectionHeights] = useState({
@@ -12,9 +12,9 @@ export function BackgroundTransition() {
     departments: 0,
     partners: 0,
     contacts: 0,
-  })
+  });
 
-  const { scrollY } = useScroll()
+  const { scrollY } = useScroll();
 
   // Мемоизируем функцию обновления высот
   const updateSectionHeights = useCallback(() => {
@@ -26,34 +26,34 @@ export function BackgroundTransition() {
       departments: document.getElementById("departments"),
       partners: document.getElementById("partners"),
       contacts: document.getElementById("contacts"),
-    }
+    };
 
-    const heights: any = {}
+    const heights: any = {};
     Object.entries(sections).forEach(([key, element]) => {
       if (element) {
-        heights[key] = element.offsetHeight
+        heights[key] = element.offsetHeight;
       }
-    })
+    });
 
-    setSectionHeights(heights)
-  }, [])
+    setSectionHeights(heights);
+  }, []);
 
   useEffect(() => {
-    updateSectionHeights()
+    updateSectionHeights();
 
     // Дебаунс для resize события
-    let timeoutId: NodeJS.Timeout
+    let timeoutId: NodeJS.Timeout;
     const debouncedResize = () => {
-      clearTimeout(timeoutId)
-      timeoutId = setTimeout(updateSectionHeights, 150)
-    }
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(updateSectionHeights, 150);
+    };
 
-    window.addEventListener("resize", debouncedResize)
+    window.addEventListener("resize", debouncedResize);
     return () => {
-      window.removeEventListener("resize", debouncedResize)
-      clearTimeout(timeoutId)
-    }
-  }, [updateSectionHeights])
+      window.removeEventListener("resize", debouncedResize);
+      clearTimeout(timeoutId);
+    };
+  }, [updateSectionHeights]);
 
   // Мемоизируем вычисления кумулятивных высот
   const cumulativeHeights = useMemo(
@@ -61,8 +61,13 @@ export function BackgroundTransition() {
       hero: 0,
       about: sectionHeights.hero,
       services: sectionHeights.hero + sectionHeights.about,
-      projects: sectionHeights.hero + sectionHeights.about + sectionHeights.services,
-      departments: sectionHeights.hero + sectionHeights.about + sectionHeights.services + sectionHeights.projects,
+      projects:
+        sectionHeights.hero + sectionHeights.about + sectionHeights.services,
+      departments:
+        sectionHeights.hero +
+        sectionHeights.about +
+        sectionHeights.services +
+        sectionHeights.projects,
       partners:
         sectionHeights.hero +
         sectionHeights.about +
@@ -77,18 +82,23 @@ export function BackgroundTransition() {
         sectionHeights.departments +
         sectionHeights.partners,
     }),
-    [sectionHeights],
-  )
+    [sectionHeights]
+  );
 
   // Мемоизируем функцию создания переходов
   const createTransition = useCallback(
-    (fromSection: keyof typeof cumulativeHeights, toSection: keyof typeof cumulativeHeights) => {
-      const start = cumulativeHeights[fromSection] + sectionHeights[fromSection] * 0.5
-      const end = cumulativeHeights[toSection] + sectionHeights[toSection] * 0.3
-      return { start, end }
+    (
+      fromSection: keyof typeof cumulativeHeights,
+      toSection: keyof typeof cumulativeHeights
+    ) => {
+      const start =
+        cumulativeHeights[fromSection] + sectionHeights[fromSection] * 0.5;
+      const end =
+        cumulativeHeights[toSection] + sectionHeights[toSection] * 0.3;
+      return { start, end };
     },
-    [cumulativeHeights, sectionHeights],
-  )
+    [cumulativeHeights, sectionHeights]
+  );
 
   // Мемоизируем переходы
   const transitions = useMemo(
@@ -100,11 +110,15 @@ export function BackgroundTransition() {
       departmentsToPartners: createTransition("departments", "partners"),
       partnersToContacts: createTransition("partners", "contacts"),
     }),
-    [createTransition],
-  )
+    [createTransition]
+  );
 
   // Оптимизированные opacity transforms
-  const heroOpacity = useTransform(scrollY, [0, transitions.heroToAbout.end], [1, 0])
+  const heroOpacity = useTransform(
+    scrollY,
+    [0, transitions.heroToAbout.end],
+    [1, 0]
+  );
   const aboutOpacity = useTransform(
     scrollY,
     [
@@ -113,8 +127,8 @@ export function BackgroundTransition() {
       transitions.aboutToServices.start,
       transitions.aboutToServices.end,
     ],
-    [0, 1, 1, 0],
-  )
+    [0, 1, 1, 0]
+  );
   const servicesOpacity = useTransform(
     scrollY,
     [
@@ -123,8 +137,8 @@ export function BackgroundTransition() {
       transitions.servicesToProjects.start,
       transitions.servicesToProjects.end,
     ],
-    [0, 1, 1, 0],
-  )
+    [0, 1, 1, 0]
+  );
   const projectsOpacity = useTransform(
     scrollY,
     [
@@ -133,8 +147,8 @@ export function BackgroundTransition() {
       transitions.projectsToDepartments.start,
       transitions.projectsToDepartments.end,
     ],
-    [0, 1, 1, 0],
-  )
+    [0, 1, 1, 0]
+  );
   const departmentsOpacity = useTransform(
     scrollY,
     [
@@ -143,8 +157,8 @@ export function BackgroundTransition() {
       transitions.departmentsToPartners.start,
       transitions.departmentsToPartners.end,
     ],
-    [0, 1, 1, 0],
-  )
+    [0, 1, 1, 0]
+  );
   const partnersOpacity = useTransform(
     scrollY,
     [
@@ -153,43 +167,47 @@ export function BackgroundTransition() {
       transitions.partnersToContacts.start,
       transitions.partnersToContacts.end,
     ],
-    [0, 1, 1, 0],
-  )
+    [0, 1, 1, 0]
+  );
   const contactsOpacity = useTransform(
     scrollY,
     [transitions.partnersToContacts.start, transitions.partnersToContacts.end],
-    [0, 1],
-  )
+    [0, 1]
+  );
 
-  const radialGradientOpacity = useTransform(scrollY, [0, transitions.heroToAbout.end * 0.8], [1, 0])
+  const radialGradientOpacity = useTransform(
+    scrollY,
+    [0, transitions.heroToAbout.end * 0.8],
+    [1, 0]
+  );
 
   // Оптимизированное отслеживание мыши с throttling
-  const [mousePosition, setMousePosition] = useState({ x: 0.5, y: 0.5 })
+  const [mousePosition, setMousePosition] = useState({ x: 0.5, y: 0.5 });
 
   useEffect(() => {
-    let animationFrameId: number
+    let animationFrameId: number;
 
     const handleMouseMove = (e: MouseEvent) => {
       if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId)
+        cancelAnimationFrame(animationFrameId);
       }
 
       animationFrameId = requestAnimationFrame(() => {
         setMousePosition({
           x: e.clientX / window.innerWidth,
           y: e.clientY / window.innerHeight,
-        })
-      })
-    }
+        });
+      });
+    };
 
-    window.addEventListener("mousemove", handleMouseMove, { passive: true })
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove)
+      window.removeEventListener("mousemove", handleMouseMove);
       if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId)
+        cancelAnimationFrame(animationFrameId);
       }
-    }
-  }, [])
+    };
+  }, []);
 
   return (
     <>
@@ -202,11 +220,31 @@ export function BackgroundTransition() {
         <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]">
           <svg width="100%" height="100%" className="absolute inset-0">
             <defs>
-              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5" />
+              <pattern
+                id="grid"
+                width="40"
+                height="40"
+                patternUnits="userSpaceOnUse"
+              >
+                <path
+                  d="M 40 0 L 0 0 0 40"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="0.5"
+                />
               </pattern>
-              <pattern id="smallGrid" width="8" height="8" patternUnits="userSpaceOnUse">
-                <path d="M 8 0 L 0 0 0 8" fill="none" stroke="currentColor" strokeWidth="0.2" />
+              <pattern
+                id="smallGrid"
+                width="8"
+                height="8"
+                patternUnits="userSpaceOnUse"
+              >
+                <path
+                  d="M 8 0 L 0 0 0 8"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="0.2"
+                />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#grid)" />
@@ -225,13 +263,34 @@ export function BackgroundTransition() {
           <motion.div
             className="w-full h-full will-change-transform"
             animate={{ rotate: [0, 1, 0], scale: [1, 1.02, 1] }}
-            transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse", ease: "linear" }}
+            transition={{
+              duration: 20,
+              repeat: Number.POSITIVE_INFINITY,
+              repeatType: "reverse",
+              ease: "linear",
+            }}
           >
             <svg width="100%" height="100%" className="absolute inset-0">
               <defs>
-                <pattern id="about-grid" width="60" height="60" patternUnits="userSpaceOnUse">
-                  <path d="M 60 0 L 0 0 0 60" fill="none" stroke="currentColor" strokeWidth="0.5" />
-                  <circle cx="30" cy="30" r="1" fill="currentColor" opacity="0.3" />
+                <pattern
+                  id="about-grid"
+                  width="60"
+                  height="60"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <path
+                    d="M 60 0 L 0 0 0 60"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="0.5"
+                  />
+                  <circle
+                    cx="30"
+                    cy="30"
+                    r="1"
+                    fill="currentColor"
+                    opacity="0.3"
+                  />
                 </pattern>
               </defs>
               <rect width="100%" height="100%" fill="url(#about-grid)" />
@@ -256,7 +315,12 @@ export function BackgroundTransition() {
             fill="url(#services-gradient1)"
             initial={{ y: 100 }}
             animate={{ y: [100, 70, 100] }}
-            transition={{ duration: 15, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse", ease: "linear" }}
+            transition={{
+              duration: 15,
+              repeat: Number.POSITIVE_INFINITY,
+              repeatType: "reverse",
+              ease: "linear",
+            }}
             style={{ willChange: "transform" }}
           />
           <motion.path
@@ -274,12 +338,24 @@ export function BackgroundTransition() {
             style={{ willChange: "transform" }}
           />
           <defs>
-            <linearGradient id="services-gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient
+              id="services-gradient1"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
               <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.2" />
               <stop offset="50%" stopColor="#A855F7" stopOpacity="0.15" />
               <stop offset="100%" stopColor="#D946EF" stopOpacity="0.2" />
             </linearGradient>
-            <linearGradient id="services-gradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient
+              id="services-gradient2"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
               <stop offset="0%" stopColor="#A855F7" stopOpacity="0.15" />
               <stop offset="50%" stopColor="#D946EF" stopOpacity="0.1" />
               <stop offset="100%" stopColor="#EC4899" stopOpacity="0.15" />
@@ -304,7 +380,12 @@ export function BackgroundTransition() {
             fill="url(#projects-gradient1)"
             initial={{ y: 100 }}
             animate={{ y: [100, 60, 100] }}
-            transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse", ease: "linear" }}
+            transition={{
+              duration: 20,
+              repeat: Number.POSITIVE_INFINITY,
+              repeatType: "reverse",
+              ease: "linear",
+            }}
             style={{ willChange: "transform" }}
           />
           <motion.path
@@ -322,12 +403,24 @@ export function BackgroundTransition() {
             style={{ willChange: "transform" }}
           />
           <defs>
-            <linearGradient id="projects-gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient
+              id="projects-gradient1"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
               <stop offset="0%" stopColor="#4F46E5" stopOpacity="0.2" />
               <stop offset="50%" stopColor="#6366F1" stopOpacity="0.15" />
               <stop offset="100%" stopColor="#818CF8" stopOpacity="0.2" />
             </linearGradient>
-            <linearGradient id="projects-gradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient
+              id="projects-gradient2"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
               <stop offset="0%" stopColor="#6366F1" stopOpacity="0.15" />
               <stop offset="50%" stopColor="#818CF8" stopOpacity="0.1" />
               <stop offset="100%" stopColor="#A5B4FC" stopOpacity="0.15" />
@@ -352,7 +445,12 @@ export function BackgroundTransition() {
             fill="url(#departments-gradient1)"
             initial={{ y: 100 }}
             animate={{ y: [100, 65, 100] }}
-            transition={{ duration: 18, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse", ease: "linear" }}
+            transition={{
+              duration: 18,
+              repeat: Number.POSITIVE_INFINITY,
+              repeatType: "reverse",
+              ease: "linear",
+            }}
             style={{ willChange: "transform" }}
           />
           <motion.path
@@ -370,12 +468,24 @@ export function BackgroundTransition() {
             style={{ willChange: "transform" }}
           />
           <defs>
-            <linearGradient id="departments-gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient
+              id="departments-gradient1"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
               <stop offset="0%" stopColor="#06B6D4" stopOpacity="0.2" />
               <stop offset="50%" stopColor="#0EA5E9" stopOpacity="0.15" />
               <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.2" />
             </linearGradient>
-            <linearGradient id="departments-gradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient
+              id="departments-gradient2"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
               <stop offset="0%" stopColor="#0EA5E9" stopOpacity="0.15" />
               <stop offset="50%" stopColor="#3B82F6" stopOpacity="0.1" />
               <stop offset="100%" stopColor="#6366F1" stopOpacity="0.15" />
@@ -398,12 +508,45 @@ export function BackgroundTransition() {
         <div className="absolute inset-0 opacity-[0.015] dark:opacity-[0.04]">
           <svg width="100%" height="100%" className="absolute inset-0">
             <defs>
-              <pattern id="partners-grid" width="90" height="90" patternUnits="userSpaceOnUse">
-                <path d="M 90 0 L 0 0 0 90" fill="none" stroke="currentColor" strokeWidth="0.4" />
-                <path d="M 45 0 L 45 90 M 0 45 L 90 45" fill="none" stroke="currentColor" strokeWidth="0.15" />
-                <circle cx="45" cy="45" r="1.5" fill="currentColor" opacity="0.25" />
-                <circle cx="22.5" cy="22.5" r="0.8" fill="currentColor" opacity="0.2" />
-                <circle cx="67.5" cy="67.5" r="0.8" fill="currentColor" opacity="0.2" />
+              <pattern
+                id="partners-grid"
+                width="90"
+                height="90"
+                patternUnits="userSpaceOnUse"
+              >
+                <path
+                  d="M 90 0 L 0 0 0 90"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="0.4"
+                />
+                <path
+                  d="M 45 0 L 45 90 M 0 45 L 90 45"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="0.15"
+                />
+                <circle
+                  cx="45"
+                  cy="45"
+                  r="1.5"
+                  fill="currentColor"
+                  opacity="0.25"
+                />
+                <circle
+                  cx="22.5"
+                  cy="22.5"
+                  r="0.8"
+                  fill="currentColor"
+                  opacity="0.2"
+                />
+                <circle
+                  cx="67.5"
+                  cy="67.5"
+                  r="0.8"
+                  fill="currentColor"
+                  opacity="0.2"
+                />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#partners-grid)" />
@@ -427,7 +570,12 @@ export function BackgroundTransition() {
             fill="url(#contacts-gradient1)"
             initial={{ y: 100 }}
             animate={{ y: [100, 75, 100] }}
-            transition={{ duration: 16, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse", ease: "linear" }}
+            transition={{
+              duration: 16,
+              repeat: Number.POSITIVE_INFINITY,
+              repeatType: "reverse",
+              ease: "linear",
+            }}
             style={{ willChange: "transform" }}
           />
           <motion.path
@@ -445,12 +593,24 @@ export function BackgroundTransition() {
             style={{ willChange: "transform" }}
           />
           <defs>
-            <linearGradient id="contacts-gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient
+              id="contacts-gradient1"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
               <stop offset="0%" stopColor="#14B8A6" stopOpacity="0.2" />
               <stop offset="50%" stopColor="#06B6D4" stopOpacity="0.15" />
               <stop offset="100%" stopColor="#0EA5E9" stopOpacity="0.2" />
             </linearGradient>
-            <linearGradient id="contacts-gradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient
+              id="contacts-gradient2"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
               <stop offset="0%" stopColor="#06B6D4" stopOpacity="0.15" />
               <stop offset="50%" stopColor="#0EA5E9" stopOpacity="0.1" />
               <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.15" />
@@ -461,16 +621,54 @@ export function BackgroundTransition() {
           <motion.div
             className="w-full h-full will-change-transform"
             animate={{ rotate: [0, 0.3, 0], scale: [1, 1.01, 1] }}
-            transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse", ease: "linear" }}
+            transition={{
+              duration: 20,
+              repeat: Number.POSITIVE_INFINITY,
+              repeatType: "reverse",
+              ease: "linear",
+            }}
           >
             <svg width="100%" height="100%" className="absolute inset-0">
               <defs>
-                <pattern id="contact-grid" width="120" height="120" patternUnits="userSpaceOnUse">
-                  <path d="M 120 0 L 0 0 0 120" fill="none" stroke="currentColor" strokeWidth="0.3" />
-                  <path d="M 60 0 L 60 120 M 0 60 L 120 60" fill="none" stroke="currentColor" strokeWidth="0.1" />
-                  <circle cx="60" cy="60" r="1.5" fill="currentColor" opacity="0.2" />
-                  <circle cx="30" cy="30" r="0.5" fill="currentColor" opacity="0.15" />
-                  <circle cx="90" cy="90" r="0.5" fill="currentColor" opacity="0.15" />
+                <pattern
+                  id="contact-grid"
+                  width="120"
+                  height="120"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <path
+                    d="M 120 0 L 0 0 0 120"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="0.3"
+                  />
+                  <path
+                    d="M 60 0 L 60 120 M 0 60 L 120 60"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="0.1"
+                  />
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="1.5"
+                    fill="currentColor"
+                    opacity="0.2"
+                  />
+                  <circle
+                    cx="30"
+                    cy="30"
+                    r="0.5"
+                    fill="currentColor"
+                    opacity="0.15"
+                  />
+                  <circle
+                    cx="90"
+                    cy="90"
+                    r="0.5"
+                    fill="currentColor"
+                    opacity="0.15"
+                  />
                 </pattern>
               </defs>
               <rect width="100%" height="100%" fill="url(#contact-grid)" />
@@ -479,14 +677,15 @@ export function BackgroundTransition() {
         </div>
       </motion.div>
 
-
       <motion.div
         className="fixed inset-0 z-[-1] pointer-events-none will-change-transform"
         style={{
           opacity: radialGradientOpacity,
-          background: `radial-gradient(circle at ${mousePosition.x * 100}% ${mousePosition.y * 100}%, rgba(59, 130, 246, 0.15) 0%, rgba(147, 51, 234, 0.1) 25%, rgba(236, 72, 153, 0.05) 50%, transparent 70%)`,
+          background: `radial-gradient(circle at ${mousePosition.x * 100}% ${
+            mousePosition.y * 100
+          }%, rgba(59, 130, 246, 0.15) 0%, rgba(147, 51, 234, 0.1) 25%, rgba(236, 72, 153, 0.05) 50%, transparent 70%)`,
         }}
       />
     </>
-  )
+  );
 }

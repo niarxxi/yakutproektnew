@@ -1,28 +1,28 @@
-"use client"
+"use client";
 
-import { ArrowLeft, ArrowRight, Play, Pause } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-import Image from "next/image"
-import { useEffect, useState, useCallback, useMemo } from "react"
-import { cn } from "@/lib/utils"
-import { useDepartments } from "@/hooks/use-departments"
-import { Badge } from "@/components/ui/badge"
+import { ArrowLeft, ArrowRight, Play, Pause } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { cn } from "@/lib/utils";
+import { useDepartments } from "@/hooks/use-departments";
+import { Badge } from "@/components/ui/badge";
 
 // Константы для лучшей читаемости и поддержки
-const AUTOPLAY_INTERVAL = 5000
-const ANIMATION_DURATION = 0.4
-const TEXT_ANIMATION_DELAY = 0.02
-const MAX_ROTATION = 10
+const AUTOPLAY_INTERVAL = 5000;
+const ANIMATION_DURATION = 0.4;
+const TEXT_ANIMATION_DELAY = 0.02;
+const MAX_ROTATION = 10;
 
 // Компонент для кнопок навигации
-const NavigationButton = ({ 
-  onClick, 
-  children, 
-  className = "" 
-}: { 
-  onClick: () => void
-  children: React.ReactNode
-  className?: string 
+const NavigationButton = ({
+  onClick,
+  children,
+  className = "",
+}: {
+  onClick: () => void;
+  children: React.ReactNode;
+  className?: string;
 }) => (
   <button
     onClick={onClick}
@@ -35,15 +35,15 @@ const NavigationButton = ({
   >
     {children}
   </button>
-)
+);
 
 // Компонент для индикаторов точек
-const DotIndicator = ({ 
-  isActive, 
-  onClick 
-}: { 
-  isActive: boolean
-  onClick: () => void 
+const DotIndicator = ({
+  isActive,
+  onClick,
+}: {
+  isActive: boolean;
+  onClick: () => void;
 }) => (
   <button
     onClick={onClick}
@@ -55,22 +55,24 @@ const DotIndicator = ({
         : "bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 w-2"
     )}
   />
-)
+);
 
 // Компонент для анимированных частиц фона
 const BackgroundParticles = ({ mounted }: { mounted: boolean }) => {
   // Фиксированные позиции для частиц, чтобы избежать разных значений на сервере и клиенте
-  const particles = useMemo(() => 
-    Array.from({ length: 15 }, (_, i) => ({
-      id: i,
-      initialX: (i * 127) % 1920, // Детерминированные позиции
-      initialY: (i * 211) % 1080,
-      duration: 3 + (i % 4),
-      delay: (i % 3) * 0.5,
-    })), []
-  )
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 15 }, (_, i) => ({
+        id: i,
+        initialX: (i * 127) % 1920, // Детерминированные позиции
+        initialY: (i * 211) % 1080,
+        duration: 3 + (i % 4),
+        delay: (i % 3) * 0.5,
+      })),
+    []
+  );
 
-  if (!mounted) return null
+  if (!mounted) return null;
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -98,15 +100,15 @@ const BackgroundParticles = ({ mounted }: { mounted: boolean }) => {
         />
       ))}
     </div>
-  )
-}
+  );
+};
 
 // Компонент для анимированного текста
-const AnimatedText = ({ text, active }: { text: string, active: number }) => {
-  const words = useMemo(() => text.split(" "), [text])
-  
+const AnimatedText = ({ text, active }: { text: string; active: number }) => {
+  const words = useMemo(() => text.split(" "), [text]);
+
   return (
-    <motion.p 
+    <motion.p
       key={active}
       className="text-lg text-gray-600 dark:text-gray-300 mb-6 leading-relaxed"
     >
@@ -134,112 +136,115 @@ const AnimatedText = ({ text, active }: { text: string, active: number }) => {
         </motion.span>
       ))}
     </motion.p>
-  )
-}
+  );
+};
 
 export const Departments = ({
   autoplay = true,
   className,
 }: {
-  autoplay?: boolean
-  className?: string
+  autoplay?: boolean;
+  className?: string;
 }) => {
-  const departments = useDepartments()
-  const [active, setActive] = useState(0)
-  const [isPlaying, setIsPlaying] = useState(autoplay)
-  const [mounted, setMounted] = useState(false)
+  const departments = useDepartments();
+  const [active, setActive] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(autoplay);
+  const [mounted, setMounted] = useState(false);
 
   // Предопределенные углы поворота для избежания различий между сервером и клиентом
-  const rotationAngles = useMemo(() => 
-    departments.map((_, index) => (index * 37) % 21 - 10), // Детерминированные углы от -10 до 10
+  const rotationAngles = useMemo(
+    () => departments.map((_, index) => ((index * 37) % 21) - 10), // Детерминированные углы от -10 до 10
     [departments]
-  )
+  );
 
   // Установка mounted флага
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   // Мемоизированные функции для навигации
   const handleNext = useCallback(() => {
-    setActive((prev) => (prev + 1) % departments.length)
-  }, [departments.length])
+    setActive((prev) => (prev + 1) % departments.length);
+  }, [departments.length]);
 
   const handlePrev = useCallback(() => {
-    setActive((prev) => (prev - 1 + departments.length) % departments.length)
-  }, [departments.length])
+    setActive((prev) => (prev - 1 + departments.length) % departments.length);
+  }, [departments.length]);
 
   const togglePlayPause = useCallback(() => {
-    setIsPlaying(prev => !prev)
-  }, [])
+    setIsPlaying((prev) => !prev);
+  }, []);
 
   const goToSlide = useCallback((index: number) => {
-    setActive(index)
-  }, [])
+    setActive(index);
+  }, []);
 
   // Эффект для автопрокрутки
   useEffect(() => {
-    if (!isPlaying || departments.length <= 1 || !mounted) return
+    if (!isPlaying || departments.length <= 1 || !mounted) return;
 
-    const interval = setInterval(handleNext, AUTOPLAY_INTERVAL)
-    return () => clearInterval(interval)
-  }, [isPlaying, handleNext, departments.length, mounted])
+    const interval = setInterval(handleNext, AUTOPLAY_INTERVAL);
+    return () => clearInterval(interval);
+  }, [isPlaying, handleNext, departments.length, mounted]);
 
   // Обработка клавиатурных событий
   useEffect(() => {
-    if (!mounted) return
+    if (!mounted) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
-        case 'ArrowLeft':
-          e.preventDefault()
-          handlePrev()
-          break
-        case 'ArrowRight':
-          e.preventDefault()
-          handleNext()
-          break
-        case ' ':
-          e.preventDefault()
-          togglePlayPause()
-          break
+        case "ArrowLeft":
+          e.preventDefault();
+          handlePrev();
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          handleNext();
+          break;
+        case " ":
+          e.preventDefault();
+          togglePlayPause();
+          break;
       }
-    }
+    };
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handleNext, handlePrev, togglePlayPause, mounted])
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleNext, handlePrev, togglePlayPause, mounted]);
 
   // Мемоизированные компоненты навигации
-  const navigationButtons = useMemo(() => (
-    <>
-      <NavigationButton onClick={handlePrev}>
-        <ArrowLeft className="h-5 w-5 text-gray-600 dark:text-gray-300 group-hover/button:rotate-12 transition-transform duration-300" />
-      </NavigationButton>
-      <NavigationButton onClick={togglePlayPause}>
-        {isPlaying ? (
-          <Pause className="h-5 w-5 text-gray-600 dark:text-gray-300 group-hover/button:scale-110 transition-transform duration-300" />
-        ) : (
-          <Play className="h-5 w-5 text-gray-600 dark:text-gray-300 group-hover/button:scale-110 transition-transform duration-300 ml-0.5" />
-        )}
-      </NavigationButton>
-      <NavigationButton onClick={handleNext}>
-        <ArrowRight className="h-5 w-5 text-gray-600 dark:text-gray-300 group-hover/button:-rotate-12 transition-transform duration-300" />
-      </NavigationButton>
-    </>
-  ), [handlePrev, togglePlayPause, handleNext, isPlaying])
+  const navigationButtons = useMemo(
+    () => (
+      <>
+        <NavigationButton onClick={handlePrev}>
+          <ArrowLeft className="h-5 w-5 text-gray-600 dark:text-gray-300 group-hover/button:rotate-12 transition-transform duration-300" />
+        </NavigationButton>
+        <NavigationButton onClick={togglePlayPause}>
+          {isPlaying ? (
+            <Pause className="h-5 w-5 text-gray-600 dark:text-gray-300 group-hover/button:scale-110 transition-transform duration-300" />
+          ) : (
+            <Play className="h-5 w-5 text-gray-600 dark:text-gray-300 group-hover/button:scale-110 transition-transform duration-300 ml-0.5" />
+          )}
+        </NavigationButton>
+        <NavigationButton onClick={handleNext}>
+          <ArrowRight className="h-5 w-5 text-gray-600 dark:text-gray-300 group-hover/button:-rotate-12 transition-transform duration-300" />
+        </NavigationButton>
+      </>
+    ),
+    [handlePrev, togglePlayPause, handleNext, isPlaying]
+  );
 
-  const currentDepartment = departments[active]
+  const currentDepartment = departments[active];
 
   if (!departments.length) {
-    return null
+    return null;
   }
 
   // Показываем loading состояние до завершения гидрации
   if (!mounted) {
     return (
-      <section 
-        id="departments" 
+      <section
+        id="departments"
         className="relative py-20 overflow-hidden"
         role="region"
         aria-label="Отделы компании"
@@ -250,7 +255,8 @@ export const Departments = ({
               Наша команда
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300">
-              14 специализированных отделов объединяют более 150 профессионалов для комплексного подхода к проектированию
+              14 специализированных отделов объединяют более 150 профессионалов
+              для комплексного подхода к проектированию
             </p>
           </div>
           <div className="max-w-sm md:max-w-6xl mx-auto px-4 md:px-8 lg:px-12">
@@ -267,12 +273,12 @@ export const Departments = ({
           </div>
         </div>
       </section>
-    )
+    );
   }
 
   return (
-    <section 
-      id="departments" 
+    <section
+      id="departments"
       className="relative py-20 overflow-hidden"
       role="region"
       aria-label="Отделы компании"
@@ -291,11 +297,17 @@ export const Departments = ({
             Наша команда
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-300">
-            14 специализированных отделов объединяют более 150 профессионалов для комплексного подхода к проектированию
+            14 специализированных отделов объединяют более 150 профессионалов
+            для комплексного подхода к проектированию
           </p>
         </motion.div>
 
-        <div className={cn("max-w-sm md:max-w-6xl mx-auto px-4 md:px-8 lg:px-12", className)}>
+        <div
+          className={cn(
+            "max-w-sm md:max-w-6xl mx-auto px-4 md:px-8 lg:px-12",
+            className
+          )}
+        >
           <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
             {/* Image Section */}
             <div>
@@ -315,7 +327,10 @@ export const Departments = ({
                         scale: index === active ? 1 : 0.95,
                         z: index === active ? 0 : -100,
                         rotate: index === active ? 0 : rotationAngles[index],
-                        zIndex: index === active ? 999 : departments.length + 2 - index,
+                        zIndex:
+                          index === active
+                            ? 999
+                            : departments.length + 2 - index,
                         y: index === active ? [0, -20, 0] : 0,
                       }}
                       exit={{
@@ -334,7 +349,9 @@ export const Departments = ({
                         <Image
                           src={
                             department.image ||
-                            `/placeholder.svg?height=400&width=600&text=${encodeURIComponent(department.name)}`
+                            `/placeholder.svg?height=400&width=600&text=${encodeURIComponent(
+                              department.name
+                            )}`
                           }
                           alt={`Отдел ${department.name}`}
                           width={600}
@@ -343,19 +360,27 @@ export const Departments = ({
                           className="h-full w-full object-cover object-center"
                           loading={index === active ? "eager" : "lazy"}
                           onError={(e) => {
-                            const target = e.target as HTMLImageElement
-                            target.src = `/placeholder.svg?height=400&width=600&text=${encodeURIComponent(department.name)}`
+                            const target = e.target as HTMLImageElement;
+                            target.src = `/placeholder.svg?height=400&width=600&text=${encodeURIComponent(
+                              department.name
+                            )}`;
                           }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                         <div className="absolute bottom-4 left-4 text-white">
                           <div className="flex items-center gap-2 mb-2">
                             {department.icon}
-                            <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                            <Badge
+                              variant="secondary"
+                              className="bg-white/20 text-white border-white/30"
+                            >
                               {department.specialists} специалистов
                             </Badge>
                             {department.projects > 0 && (
-                              <Badge variant="secondary" className="bg-green-500/20 text-white border-green-300/30">
+                              <Badge
+                                variant="secondary"
+                                className="bg-green-500/20 text-white border-green-300/30"
+                              >
                                 {department.projects} проектов
                               </Badge>
                             )}
@@ -393,7 +418,10 @@ export const Departments = ({
                     Руководитель: {currentDepartment.head}
                   </p>
 
-                  <AnimatedText text={currentDepartment.description} active={active} />
+                  <AnimatedText
+                    text={currentDepartment.description}
+                    active={active}
+                  />
 
                   {/* Specializations */}
                   <div className="mb-6">
@@ -448,5 +476,5 @@ export const Departments = ({
         </div>
       </div>
     </section>
-  )
-}
+  );
+};

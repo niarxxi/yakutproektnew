@@ -81,13 +81,21 @@ export function Preloader() {
 
             {/* Название компании */}
             <motion.h1
-              className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent"
+              className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent brand-text"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 1 }}
             >
               ЯКУТПРОЕКТ
             </motion.h1>
+
+            {/* Подчеркивание */}
+            <motion.div
+              className="h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent mt-2 mx-auto"
+              initial={{ width: 0 }}
+              animate={{ width: "100%" }}
+              transition={{ delay: 1.5, duration: 1 }}
+            />
 
             {/* Прогресс бар */}
             <motion.div

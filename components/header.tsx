@@ -67,7 +67,7 @@ export function Header() {
                 className="dark:brightness-110 h-10 w-auto"
                 priority // Добавлен атрибут priority для оптимизации LCP
               />
-              <span className="text-xl font-bold text-gray-900 dark:text-white">
+              <span className="text-xl font-bold text-gray-900 dark:text-white brand-text">
                 ЯКУТПРОЕКТ
               </span>
             </Link>
