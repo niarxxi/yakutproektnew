@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
+import { FontLoader } from "@/components/font-loader";
 
 const inter = Inter({
   subsets: ["latin", "cyrillic"],
@@ -29,29 +30,20 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <meta name="theme-color" content="#2563eb" />
+        {/* Добавляем Google Fonts как fallback */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
-          rel="preload"
-          href="/fonts/Wremena-Regular.woff"
-          as="font"
-          type="font/woff"
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
         <link
-          rel="preload"
-          href="/fonts/Wremena-Bold.woff"
-          as="font"
-          type="font/woff"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="preload"
-          href="/fonts/Wremena-Light.woff"
-          as="font"
-          type="font/woff"
-          crossOrigin="anonymous"
+          href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;700&display=swap"
+          rel="stylesheet"
         />
       </head>
       <body className={`${inter.className} font-sans antialiased`}>
+        <FontLoader />
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

@@ -2,29 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom Wremena Font Family - только для заголовков */
+/* Пытаемся загрузить Wremena, но не блокируем рендеринг */
 @font-face {
   font-family: "Wremena";
-  src: url("/fonts/Wremena-Light.woff") format("woff");
+  src: url("/fonts/Wremena Light.woff") format("woff");
   font-weight: 300;
   font-style: normal;
-  font-display: swap;
+  font-display: optional; /* Используем optional вместо swap для избежания блокировки */
 }
 
 @font-face {
   font-family: "Wremena";
-  src: url("/fonts/Wremena-Regular.woff") format("woff");
+  src: url("/fonts/Wremena Regular.woff") format("woff");
   font-weight: 400;
   font-style: normal;
-  font-display: swap;
+  font-display: optional;
 }
 
 @font-face {
   font-family: "Wremena";
-  src: url("/fonts/Wremena-Bold.woff") format("woff");
+  src: url("/fonts/Wremena Bold.woff") format("woff");
   font-weight: 700;
   font-style: normal;
-  font-display: swap;
+  font-display: optional;
 }
 
 @layer base {
@@ -50,10 +50,11 @@
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
 
-    /* Typography variables */
-    --font-wremena: "Wremena", "Georgia", "Times New Roman", serif;
+    /* Typography variables с надежными fallback шрифтами */
+    --font-wremena: "Wremena", "Playfair Display", "Georgia", "Times New Roman",
+      serif;
     --font-inter: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
-      "Roboto", sans-serif;
+      "Roboto", "Helvetica Neue", Arial, sans-serif;
   }
 
   .dark {
@@ -90,7 +91,7 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  /* Заголовки используют Wremena */
+  /* Заголовки используют Wremena с надежным fallback */
   h1,
   h2,
   h3,
@@ -142,6 +143,17 @@
     font-family: var(--font-wremena);
     font-weight: 700;
   }
+
+  /* Плавный переход при загрузке шрифтов */
+  .fonts-loaded h1,
+  .fonts-loaded h2,
+  .fonts-loaded h3,
+  .fonts-loaded h4,
+  .fonts-loaded h5,
+  .fonts-loaded h6,
+  .fonts-loaded .brand-text {
+    transition: font-family 0.3s ease;
+  }
 }
 
 @layer utilities {
@@ -153,12 +165,10 @@
   }
 }
 
-/* Smooth scrolling */
 html {
   scroll-behavior: smooth;
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -188,7 +198,6 @@ html {
   background: #718096;
 }
 
-/* Grid pattern background */
 .bg-grid-pattern {
   background-image: linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
@@ -203,7 +212,6 @@ html {
     linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
 }
 
-/* Performance optimizations */
 .will-change-transform {
   will-change: transform;
 }
@@ -216,14 +224,12 @@ html {
   will-change: auto;
 }
 
-/* GPU acceleration for animations */
 .gpu-accelerated {
   transform: translateZ(0);
   backface-visibility: hidden;
   perspective: 1000px;
 }
 
-/* Reduce motion for accessibility */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -240,25 +246,21 @@ html {
   }
 }
 
-/* Optimize font rendering */
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-/* Optimize image rendering */
 img {
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
 }
 
-/* Contain layout for better performance */
 .layout-contained {
   contain: layout style paint;
 }
 
-/* Optimize animations */
 @keyframes gradient {
   0% {
     background-position: 0% 50%;
@@ -279,13 +281,11 @@ img {
   animation: gradient 8s ease infinite;
 }
 
-/* Optimize scrolling */
 .smooth-scroll {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Optimize transforms */
 .transform-gpu {
   transform: translate3d(0, 0, 0);
 }
