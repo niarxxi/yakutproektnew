@@ -58,27 +58,48 @@ const DotIndicator = ({
 )
 
 // Компонент для анимированных частиц фона
-const BackgroundParticles = () => (
-  <div className="absolute inset-0 overflow-hidden pointer-events-none">
-    {Array.from({ length: 15 }, (_, i) => (
-      <motion.div
-        key={i}
-        className="absolute w-1 h-1 bg-cyan-400 dark:bg-cyan-500 rounded-full opacity-40"
-        animate={{
-          x: [Math.random() * 1920, Math.random() * 1920],
-          y: [Math.random() * 1080, Math.random() * 1080],
-          scale: [0, 1, 0],
-          opacity: [0, 0.6, 0],
-        }}
-        transition={{
-          duration: Math.random() * 4 + 3,
-          repeat: Infinity,
-          delay: Math.random() * 2,
-        }}
-      />
-    ))}
-  </div>
-)
+const BackgroundParticles = ({ mounted }: { mounted: boolean }) => {
+  // Фиксированные позиции для частиц, чтобы избежать разных значений на сервере и клиенте
+  const particles = useMemo(() => 
+    Array.from({ length: 15 }, (_, i) => ({
+      id: i,
+      initialX: (i * 127) % 1920, // Детерминированные позиции
+      initialY: (i * 211) % 1080,
+      duration: 3 + (i % 4),
+      delay: (i % 3) * 0.5,
+    })), []
+  )
+
+  if (!mounted) return null
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {particles.map((particle) => (
+        <motion.div
+          key={particle.id}
+          className="absolute w-1 h-1 bg-cyan-400 dark:bg-cyan-500 rounded-full opacity-40"
+          initial={{
+            x: particle.initialX,
+            y: particle.initialY,
+            scale: 0,
+            opacity: 0,
+          }}
+          animate={{
+            x: [particle.initialX, (particle.initialX + 200) % 1920],
+            y: [particle.initialY, (particle.initialY + 150) % 1080],
+            scale: [0, 1, 0],
+            opacity: [0, 0.6, 0],
+          }}
+          transition={{
+            duration: particle.duration,
+            repeat: Infinity,
+            delay: particle.delay,
+          }}
+        />
+      ))}
+    </div>
+  )
+}
 
 // Компонент для анимированного текста
 const AnimatedText = ({ text, active }: { text: string, active: number }) => {
@@ -126,6 +147,18 @@ export const Departments = ({
   const departments = useDepartments()
   const [active, setActive] = useState(0)
   const [isPlaying, setIsPlaying] = useState(autoplay)
+  const [mounted, setMounted] = useState(false)
+
+  // Предопределенные углы поворота для избежания различий между сервером и клиентом
+  const rotationAngles = useMemo(() => 
+    departments.map((_, index) => (index * 37) % 21 - 10), // Детерминированные углы от -10 до 10
+    [departments]
+  )
+
+  // Установка mounted флага
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Мемоизированные функции для навигации
   const handleNext = useCallback(() => {
@@ -144,21 +177,18 @@ export const Departments = ({
     setActive(index)
   }, [])
 
-  // Функция для генерации случайного угла поворота
-  const randomRotateY = useCallback(() => {
-    return Math.floor(Math.random() * (MAX_ROTATION * 2 + 1)) - MAX_ROTATION
-  }, [])
-
   // Эффект для автопрокрутки
   useEffect(() => {
-    if (!isPlaying || departments.length <= 1) return
+    if (!isPlaying || departments.length <= 1 || !mounted) return
 
     const interval = setInterval(handleNext, AUTOPLAY_INTERVAL)
     return () => clearInterval(interval)
-  }, [isPlaying, handleNext, departments.length])
+  }, [isPlaying, handleNext, departments.length, mounted])
 
   // Обработка клавиатурных событий
   useEffect(() => {
+    if (!mounted) return
+
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
         case 'ArrowLeft':
@@ -178,7 +208,7 @@ export const Departments = ({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handleNext, handlePrev, togglePlayPause])
+  }, [handleNext, handlePrev, togglePlayPause, mounted])
 
   // Мемоизированные компоненты навигации
   const navigationButtons = useMemo(() => (
@@ -205,6 +235,41 @@ export const Departments = ({
     return null
   }
 
+  // Показываем loading состояние до завершения гидрации
+  if (!mounted) {
+    return (
+      <section 
+        id="departments" 
+        className="relative py-20 overflow-hidden"
+        role="region"
+        aria-label="Отделы компании"
+      >
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+              Наша команда
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300">
+              14 специализированных отделов объединяют более 150 профессионалов для комплексного подхода к проектированию
+            </p>
+          </div>
+          <div className="max-w-sm md:max-w-6xl mx-auto px-4 md:px-8 lg:px-12">
+            <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
+              <div className="h-80 md:h-96 w-full bg-gray-200 dark:bg-gray-800 rounded-3xl animate-pulse" />
+              <div className="flex justify-between flex-col py-4">
+                <div className="space-y-4">
+                  <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+                  <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+                  <div className="h-20 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section 
       id="departments" 
@@ -212,7 +277,7 @@ export const Departments = ({
       role="region"
       aria-label="Отделы компании"
     >
-      <BackgroundParticles />
+      <BackgroundParticles mounted={mounted} />
 
       <div className="container mx-auto px-4 relative z-10">
         <motion.div
@@ -235,7 +300,7 @@ export const Departments = ({
             {/* Image Section */}
             <div>
               <div className="relative h-80 md:h-96 w-full">
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="sync">
                   {departments.map((department, index) => (
                     <motion.div
                       key={department.id}
@@ -243,13 +308,13 @@ export const Departments = ({
                         opacity: 0,
                         scale: 0.9,
                         z: -100,
-                        rotate: randomRotateY(),
+                        rotate: rotationAngles[index],
                       }}
                       animate={{
                         opacity: index === active ? 1 : 0.7,
                         scale: index === active ? 1 : 0.95,
                         z: index === active ? 0 : -100,
-                        rotate: index === active ? 0 : randomRotateY(),
+                        rotate: index === active ? 0 : rotationAngles[index],
                         zIndex: index === active ? 999 : departments.length + 2 - index,
                         y: index === active ? [0, -20, 0] : 0,
                       }}
@@ -257,7 +322,7 @@ export const Departments = ({
                         opacity: 0,
                         scale: 0.9,
                         z: 100,
-                        rotate: randomRotateY(),
+                        rotate: rotationAngles[index],
                       }}
                       transition={{
                         duration: ANIMATION_DURATION,
@@ -309,7 +374,7 @@ export const Departments = ({
             </div>
 
             {/* Content Section */}
-            <div className="flex justify-between flex-col py-4">
+            <div className="py-4">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={active}
@@ -359,22 +424,25 @@ export const Departments = ({
                   </div>
                 </motion.div>
               </AnimatePresence>
+            </div>
+          </div>
 
-              {/* Desktop Navigation */}
-              <div className="hidden lg:flex gap-4 pt-8">
-                {navigationButtons}
-              </div>
+          {/* Независимые кнопки навигации */}
+          <div className="mt-8 lg:mt-12">
+            {/* Desktop Navigation - независимая позиция */}
+            <div className="hidden lg:flex justify-center gap-4 mb-6">
+              {navigationButtons}
+            </div>
 
-              {/* Dots indicator */}
-              <div className="flex justify-center gap-2 mt-6" role="tablist">
-                {departments.map((_, index) => (
-                  <DotIndicator
-                    key={index}
-                    isActive={index === active}
-                    onClick={() => goToSlide(index)}
-                  />
-                ))}
-              </div>
+            {/* Dots indicator - независимая позиция */}
+            <div className="flex justify-center gap-2" role="tablist">
+              {departments.map((_, index) => (
+                <DotIndicator
+                  key={index}
+                  isActive={index === active}
+                  onClick={() => goToSlide(index)}
+                />
+              ))}
             </div>
           </div>
         </div>

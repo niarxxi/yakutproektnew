@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -14,9 +14,40 @@ export function Projects() {
   const { projectImages, projectCategories } = useProjects()
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [selectedProject, setSelectedProject] = useState<ProjectImage | null>(null)
-  const [visibleCount, setVisibleCount] = useState(8) // Начальное количество карточек
+  const [visibleCount, setVisibleCount] = useState(8)
+  const [mounted, setMounted] = useState(false)
 
-  // Добавить в начало компонента после других хуков
+  // Генерируем стабильные случайные значения только после монтирования
+  const particleData = useMemo(() => {
+    if (!mounted) return []
+    
+    return Array.from({ length: 25 }, (_, i) => ({
+      id: i,
+      initialX: Math.random() * 1920,
+      initialY: Math.random() * 1080,
+      targetX: Math.random() * 1920,
+      targetY: Math.random() * 1080,
+      duration: Math.random() * 3 + 2,
+      delay: Math.random() * 2,
+    }))
+  }, [mounted])
+
+  const buildingIconData = useMemo(() => {
+    if (!mounted) return []
+    
+    return Array.from({ length: 8 }, (_, i) => ({
+      id: i,
+      top: Math.random() * 100,
+      left: Math.random() * 100,
+      duration: 20 + i * 3,
+      delay: i * 2,
+    }))
+  }, [mounted])
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   useEffect(() => {
     const handleCategorySelect = (event: CustomEvent) => {
       const { category } = event.detail
@@ -46,10 +77,7 @@ export function Projects() {
           return project.category === categoryMap[selectedCategory]
         })
 
-  // Определяем какие проекты показывать
   const projectsToShow = selectedCategory === "all" ? filteredProjects.slice(0, visibleCount) : filteredProjects
-
-  // Проверяем, есть ли еще проекты для показа
   const hasMoreProjects = selectedCategory === "all" && visibleCount < filteredProjects.length
 
   const handleLoadMore = () => {
@@ -58,7 +86,6 @@ export function Projects() {
 
   const handleCategoryChange = (categoryId: string) => {
     setSelectedCategory(categoryId)
-    // Сбрасываем счетчик при смене категории
     if (categoryId === "all") {
       setVisibleCount(8)
     }
@@ -66,26 +93,34 @@ export function Projects() {
 
   return (
     <section id="projects" className="relative py-20 overflow-hidden">
-      {/* Плавающие частицы - движутся плавно и независимо */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(25)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-indigo-400 dark:bg-indigo-500 rounded-full opacity-60"
-            animate={{
-              x: [Math.random() * 1920, Math.random() * 1920],
-              y: [Math.random() * 1080, Math.random() * 1080],
-              scale: [0, 1, 0],
-              opacity: [0, 0.8, 0],
-            }}
-            transition={{
-              duration: Math.random() * 3 + 2,
-              repeat: Number.POSITIVE_INFINITY,
-              delay: Math.random() * 2,
-            }}
-          />
-        ))}
-      </div>
+      {/* Плавающие частицы - рендерятся только после монтирования */}
+      {mounted && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {particleData.map((particle) => (
+            <motion.div
+              key={particle.id}
+              className="absolute w-1 h-1 bg-indigo-400 dark:bg-indigo-500 rounded-full opacity-60"
+              initial={{
+                x: particle.initialX,
+                y: particle.initialY,
+                scale: 0,
+                opacity: 0,
+              }}
+              animate={{
+                x: [particle.initialX, particle.targetX],
+                y: [particle.initialY, particle.targetY],
+                scale: [0, 1, 0],
+                opacity: [0, 0.8, 0],
+              }}
+              transition={{
+                duration: particle.duration,
+                repeat: Number.POSITIVE_INFINITY,
+                delay: particle.delay,
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Большие декоративные элементы */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -100,14 +135,14 @@ export function Projects() {
           transition={{ duration: 150, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
         />
 
-        {/* Архитектурные иконки */}
-        {[...Array(8)].map((_, i) => (
+        {/* Архитектурные иконки - рендерятся только после монтирования */}
+        {mounted && buildingIconData.map((icon) => (
           <motion.div
-            key={i}
+            key={icon.id}
             className="absolute opacity-[0.05] dark:opacity-[0.1]"
             style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
+              top: `${icon.top}%`,
+              left: `${icon.left}%`,
             }}
             animate={{
               y: [0, -30, 0],
@@ -115,9 +150,9 @@ export function Projects() {
               scale: [1, 1.2, 1],
             }}
             transition={{
-              duration: 20 + i * 3,
+              duration: icon.duration,
               repeat: Number.POSITIVE_INFINITY,
-              delay: i * 2,
+              delay: icon.delay,
             }}
           >
             <Building2 className="w-12 h-12 text-indigo-500" />
@@ -195,7 +230,6 @@ export function Projects() {
                       className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                       loading="lazy"
                       onError={(e) => {
-                        // Fallback к placeholder если изображение не загрузилось
                         const target = e.target as HTMLImageElement
                         target.src = `/placeholder.svg?height=400&width=600&text=${encodeURIComponent(
                           project.category,
@@ -216,7 +250,7 @@ export function Projects() {
           </AnimatePresence>
         </motion.div>
 
-        {/* Load More Button - показывается только для "Все проекты" */}
+        {/* Load More Button */}
         {hasMoreProjects && (
           <motion.div
             initial={{ opacity: 0, y: 30 }}

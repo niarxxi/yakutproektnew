@@ -134,7 +134,7 @@ export const About = memo(() => {
             className="relative"
           >
             <img
-              src="/images/logo512.svg?height=400&width=600&text=ЯКУТПРОЕКТ"
+              src="/images/logo.svg?height=400&width=600&text=ЯКУТПРОЕКТ"
               alt="ЯКУТПРОЕКТ"
               className="object-contain"
               loading="lazy"

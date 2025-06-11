@@ -27,13 +27,14 @@ export function Footer() {
             viewport={{ once: true }}
           >
             <div className="flex items-center space-x-2 mb-4">
-              <Link href="/" className="flex items-center space-x-2">
+              <Link href="/" className="flex items-center -space-x-2">
                 <Image
-                  src="/images/logo512.svg"
+                  src="/images/minilogo.svg"
                   alt="ЯКУТПРОЕКТ"
-                  width={40}
-                  height={40}
-                  className="dark:brightness-110"
+                  width={0}
+                  height={0}
+                  sizes="100vw"
+                  className="dark:brightness-110 h-10 w-auto"
                   priority // Добавлен атрибут priority для оптимизации LCP
                 />
                 <span className="text-xl font-bold text-gray-300">
