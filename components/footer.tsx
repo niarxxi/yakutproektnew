@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Phone, Mail, Send } from "lucide-react";
+import { MapPin, Phone, Mail } from "lucide-react";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -109,7 +109,13 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="flex items-center space-x-3 text-gray-300 hover:text-blue-400 transition-colors group"
                 >
-                  <Send className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                  <Image
+                    src="/images/telegram.svg"
+                    alt="Telegram"
+                    width={25}
+                    height={25}
+                    className="group-hover:scale-110 transition-transform brightness-0 invert"
+                  />
                   <span>Telegram</span>
                 </a>
               </li>

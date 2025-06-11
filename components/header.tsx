@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X, Send } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -87,14 +87,20 @@ export function Header() {
               </motion.button>
             ))}
             <motion.a
-              href="https://t.me/ваш_telegram_username"
+              href="https://t.me/yakutproekt"
               target="_blank"
               rel="noopener noreferrer"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
-              <Send className="h-5 w-5" />
+              <Image
+                src="/images/telegram.svg"
+                alt="Telegram"
+                width={20}
+                height={20}
+                className="dark:brightness-0 dark:invert"
+              />
             </motion.a>
             <ThemeToggle />
           </nav>
@@ -137,13 +143,19 @@ export function Header() {
                   </motion.button>
                 ))}
                 <motion.a
-                  href="https://t.me/ваш_telegram_username"
+                  href="https://t.me/yakutproekt"
                   target="_blank"
                   rel="noopener noreferrer"
                   whileHover={{ x: 10 }}
                   className="flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors rounded-md"
                 >
-                  <Send className="h-4 w-4" />
+                  <Image
+                    src="/images/telegram.svg"
+                    alt="Telegram"
+                    width={16}
+                    height={16}
+                    className="dark:brightness-0 dark:invert"
+                  />
                   <span>Telegram</span>
                 </motion.a>
               </div>
