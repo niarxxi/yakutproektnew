@@ -248,7 +248,7 @@ export function Projects() {
                 className="cursor-pointer"
                 onClick={() => setSelectedProject(project)}
               >
-                <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
+                <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 bg-white/80 dark:bg-gray-900/80 border border-gray-200/50 dark:border-gray-700/50">
                   <div className="aspect-video overflow-hidden bg-gray-200 dark:bg-gray-700">
                     <img
                       src={project.src || "/placeholder.svg"}

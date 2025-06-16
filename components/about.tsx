@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { motion } from "framer-motion";
 import { Award, Users, Target, Lightbulb } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { GlassCard } from "@/components/GlassCard";
 
 const advantages = [
   {
@@ -32,39 +32,6 @@ const advantages = [
   },
 ];
 
-// Мемоизированный компонент карточки преимущества
-const AdvantageCard = memo(
-  ({
-    advantage,
-    index,
-  }: {
-    advantage: (typeof advantages)[0];
-    index: number;
-  }) => (
-    <motion.div
-      key={index}
-      whileHover={{ scale: 1.05 }}
-      transition={{ type: "spring", stiffness: 300 }}
-      className="will-change-transform"
-    >
-      <Card className="h-full hover:shadow-lg transition-shadow">
-        <CardContent className="p-6 text-center">
-          <div className="mb-4 flex justify-center">{advantage.icon}</div>
-          <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
-            {advantage.title}
-          </h4>
-          <p className="text-gray-600 dark:text-gray-300">
-            {advantage.description}
-          </p>
-        </CardContent>
-      </Card>
-    </motion.div>
-  )
-);
-
-AdvantageCard.displayName = "AdvantageCard";
-
-// Оптимизированный компонент частиц
 const OptimizedParticles = memo(() => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
     {Array.from({ length: 15 }, (_, i) => (
@@ -95,7 +62,7 @@ export const About = memo(() => {
     <section id="about" className="relative py-20 overflow-hidden">
       <OptimizedParticles />
 
-      {/* Большие декоративные круги */}
+      {/* Декоративные круги */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
           className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] rounded-full border-2 border-blue-200/30 dark:border-blue-500/20 will-change-transform"
@@ -181,7 +148,14 @@ export const About = memo(() => {
           className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
         >
           {advantages.map((advantage, index) => (
-            <AdvantageCard key={index} advantage={advantage} index={index} />
+            <GlassCard
+              key={index}
+              icon={advantage.icon}
+              title={advantage.title}
+              description={advantage.description}
+              index={index}
+              variant="blue"
+            />
           ))}
         </motion.div>
       </div>
