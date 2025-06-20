@@ -1,5 +1,7 @@
 "use client";
 
+import type React from "react";
+
 import { ArrowLeft, ArrowRight, Play, Pause } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -94,7 +96,7 @@ const BackgroundParticles = ({ mounted }: { mounted: boolean }) => {
           }}
           transition={{
             duration: particle.duration,
-            repeat: Infinity,
+            repeat: Number.POSITIVE_INFINITY,
             delay: particle.delay,
           }}
         />
@@ -103,39 +105,45 @@ const BackgroundParticles = ({ mounted }: { mounted: boolean }) => {
   );
 };
 
-// Компонент для анимированного текста
+// Компонент для анимированного текста с фиксированной высотой
 const AnimatedText = ({ text, active }: { text: string; active: number }) => {
   const words = useMemo(() => text.split(" "), [text]);
 
   return (
-    <motion.p
-      key={active}
-      className="text-lg text-gray-600 dark:text-gray-300 mb-6 leading-relaxed"
-    >
-      {words.map((word, index) => (
-        <motion.span
-          key={index}
-          initial={{
-            filter: "blur(10px)",
-            opacity: 0,
-            y: 5,
-          }}
-          animate={{
-            filter: "blur(0px)",
-            opacity: 1,
-            y: 0,
-          }}
-          transition={{
-            duration: 0.2,
-            ease: "easeInOut",
-            delay: TEXT_ANIMATION_DELAY * index,
-          }}
-          className="inline-block"
-        >
-          {word}&nbsp;
-        </motion.span>
-      ))}
-    </motion.p>
+    <div className="min-h-[120px] flex items-start">
+      <motion.p
+        key={active}
+        className="text-lg text-gray-600 dark:text-gray-300 mb-6 leading-relaxed"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        {words.map((word, index) => (
+          <motion.span
+            key={index}
+            initial={{
+              filter: "blur(10px)",
+              opacity: 0,
+              y: 5,
+            }}
+            animate={{
+              filter: "blur(0px)",
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.2,
+              ease: "easeInOut",
+              delay: TEXT_ANIMATION_DELAY * index,
+            }}
+            className="inline-block"
+          >
+            {word}&nbsp;
+          </motion.span>
+        ))}
+      </motion.p>
+    </div>
   );
 };
 
@@ -349,9 +357,10 @@ export const Departments = ({
                         <Image
                           src={
                             department.image ||
-                            `/placeholder.svg?height=400&width=600&text=${encodeURIComponent(
-                              department.name
-                            )}`
+                            `/placeholder.svg?height=400&width=600&text=${
+                              encodeURIComponent(department.name) ||
+                              "/placeholder.svg"
+                            }`
                           }
                           alt={`Отдел ${department.name}`}
                           width={600}
@@ -398,64 +407,73 @@ export const Departments = ({
               </div>
             </div>
 
-            {/* Content Section */}
+            {/* Content Section with Fixed Height Container */}
             <div className="py-4">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={active}
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: -20, opacity: 0 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-                      {currentDepartment.name}
-                    </h3>
-                  </div>
+              <div className="min-h-[500px] flex flex-col">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={active}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="flex-1"
+                  >
+                    {/* Header Section with Fixed Height */}
+                    <div className="min-h-[100px] mb-4">
+                      <div className="flex items-center gap-3 mb-4">
+                        <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+                          {currentDepartment.name}
+                        </h3>
+                      </div>
 
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                    Руководитель: {currentDepartment.head}
-                  </p>
-
-                  <AnimatedText
-                    text={currentDepartment.description}
-                    active={active}
-                  />
-
-                  {/* Specializations */}
-                  <div className="mb-6">
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                      Специализации:
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {currentDepartment.specializations.map((spec, index) => (
-                        <motion.div
-                          key={`${active}-${index}`}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: index * 0.1 }}
-                        >
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              currentDepartment.projects > 0
-                                ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700"
-                                : "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700"
-                            )}
-                          >
-                            {spec}
-                          </Badge>
-                        </motion.div>
-                      ))}
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                        Руководитель: {currentDepartment.head}
+                      </p>
                     </div>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
+
+                    {/* Description with Fixed Height Container */}
+                    <AnimatedText
+                      text={currentDepartment.description}
+                      active={active}
+                    />
+
+                    {/* Specializations with Fixed Height Container */}
+                    <div className="min-h-[200px]">
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                        Специализации:
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {currentDepartment.specializations.map(
+                          (spec, index) => (
+                            <motion.div
+                              key={`${active}-${index}`}
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: index * 0.1 }}
+                            >
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  currentDepartment.projects > 0
+                                    ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700"
+                                    : "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700"
+                                )}
+                              >
+                                {spec}
+                              </Badge>
+                            </motion.div>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
             </div>
           </div>
 
-          {/* Независимые кнопки навигации */}
+          {/* Fixed Position Navigation Controls */}
           <div className="mt-8 lg:mt-12">
             {/* Desktop Navigation - независимая позиция */}
             <div className="hidden lg:flex justify-center gap-4 mb-6">

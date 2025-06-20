@@ -293,7 +293,7 @@ export function Hero() {
     <section
       ref={containerRef}
       id="home"
-      className="relative min-h-screen flex flex-col justify-center overflow-hidden md:pt-0 pt-16"
+      className="relative min-h-screen flex flex-col justify-center overflow-hidden md:pt-0 pt-20"
     >
       {/* Оптимизированные декоративные элементы */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
