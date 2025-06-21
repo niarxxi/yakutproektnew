@@ -80,53 +80,41 @@ export function Header() {
     >
       <nav
         data-state={menuState && "active"}
-        className="fixed z-40 w-full px-2 group"
+        className="fixed z-40 w-full px-4 group"
       >
         <div
           className={cn(
-            "mx-auto mt-2 max-w-6xl px-6 transition-all duration-300 lg:px-12",
+            "container mx-auto transition-all duration-300",
             isScrolled &&
-              "bg-white/20 dark:bg-gray-900/20 max-w-4xl rounded-2xl border border-white/20 dark:border-gray-700/30 backdrop-blur-xl shadow-lg lg:px-5 lg:backdrop-blur-xl"
+              "bg-white/20 dark:bg-gray-900/20 max-w-4xl rounded-2xl border border-white/20 dark:border-gray-700/30 backdrop-blur-xl shadow-lg px-6 mt-2"
           )}
           data-scrolled={isScrolled}
         >
-          <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
-            {/* Logo Section */}
-            <div className="flex w-full justify-between lg:w-auto">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="flex items-center space-x-2"
-              >
-                <Link href="/" className="flex items-center -space-x-2">
-                  <Image
-                    src="/images/minilogo.svg"
-                    alt="ЯКУТПРОЕКТ"
-                    width={0}
-                    height={0}
-                    sizes="100vw"
-                    className="dark:brightness-110 h-10 w-auto"
-                    priority
-                  />
-                  <span className="text-xl font-bold text-gray-900 dark:text-white brand-text">
-                    ЯКУТПРОЕКТ
-                  </span>
-                </Link>
-              </motion.div>
+          <div className="flex items-center justify-between py-3 lg:py-4">
+            {/* Logo Section - Left */}
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="flex items-center space-x-2 flex-shrink-0"
+            >
+              <Link href="/" className="flex items-center -space-x-2">
+                <Image
+                  src="/images/minilogo.svg"
+                  alt="ЯКУТПРОЕКТ"
+                  width={0}
+                  height={0}
+                  sizes="100vw"
+                  className="dark:brightness-110 h-10 w-auto"
+                  priority
+                />
+                <span className="text-xl font-bold text-gray-900 dark:text-white brand-text">
+                  ЯКУТПРОЕКТ
+                </span>
+              </Link>
+            </motion.div>
 
-              {/* Mobile Menu Button */}
-              <button
-                onClick={() => setMenuState(!menuState)}
-                aria-label={menuState ? "Close Menu" : "Open Menu"}
-                className="relative z-20 -m-2.5 -mr-4 block cursor-pointer p-2.5 lg:hidden"
-              >
-                <Menu className="group-data-[state=active]:rotate-180 group-data-[state=active]:scale-0 group-data-[state=active]:opacity-0 m-auto size-6 duration-200" />
-                <X className="group-data-[state=active]:rotate-0 group-data-[state=active]:scale-100 group-data-[state=active]:opacity-100 absolute inset-0 m-auto size-6 -rotate-180 scale-0 opacity-0 duration-200" />
-              </button>
-            </div>
-
-            {/* Desktop Navigation */}
-            <div className="hidden lg:flex lg:flex-1 lg:justify-center lg:ml-8">
-              <ul className="flex gap-8 text-sm">
+            {/* Desktop Navigation - Center */}
+            <div className="hidden lg:flex flex-1 justify-center px-8">
+              <ul className="flex gap-8 text-sm whitespace-nowrap">
                 {navigation.map((item, index) => (
                   <li key={index}>
                     <motion.button
@@ -143,26 +131,9 @@ export function Header() {
             </div>
 
             {/* Right Side Actions */}
-            <div className="bg-white/10 dark:bg-gray-900/10 group-data-[state=active]:block lg:group-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl backdrop-blur-xl p-6 shadow-2xl shadow-zinc-300/20 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-3 lg:space-y-0 lg:bg-transparent lg:p-0 lg:shadow-none dark:shadow-none dark:lg:bg-transparent lg:backdrop-blur-none">
-              {/* Mobile Navigation Menu */}
-              <div className="lg:hidden">
-                <ul className="space-y-6 text-base">
-                  {navigation.map((item, index) => (
-                    <li key={index}>
-                      <motion.button
-                        whileHover={{ x: 10 }}
-                        onClick={() => scrollToSection(item.href)}
-                        className="block w-full text-left text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
-                      >
-                        <span>{item.name}</span>
-                      </motion.button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex w-full items-center justify-center gap-4 lg:w-auto lg:justify-end">
+            <div className="flex items-center gap-3 flex-shrink-0">
+              {/* Desktop Action Buttons */}
+              <div className="hidden lg:flex items-center gap-3">
                 {/* Telegram Link with Enhanced Animation */}
                 <motion.a
                   href="https://t.me/yakutproekt"
@@ -228,6 +199,60 @@ export function Header() {
                     <ThemeToggle />
                   </div>
                 </motion.div>
+              </div>
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setMenuState(!menuState)}
+                aria-label={menuState ? "Close Menu" : "Open Menu"}
+                className="relative z-20 -m-2.5 block cursor-pointer p-2.5 lg:hidden"
+              >
+                <Menu className="group-data-[state=active]:rotate-180 group-data-[state=active]:scale-0 group-data-[state=active]:opacity-0 m-auto size-6 duration-200" />
+                <X className="group-data-[state=active]:rotate-0 group-data-[state=active]:scale-100 group-data-[state=active]:opacity-100 absolute inset-0 m-auto size-6 -rotate-180 scale-0 opacity-0 duration-200" />
+              </button>
+            </div>
+
+            {/* Mobile Menu Overlay */}
+            <div className="bg-white/10 dark:bg-gray-900/10 group-data-[state=active]:block mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl backdrop-blur-xl p-6 shadow-2xl shadow-zinc-300/20 md:flex-nowrap lg:hidden absolute top-full left-0 right-0 mt-4">
+              {/* Mobile Navigation Menu */}
+              <ul className="space-y-6 text-base">
+                {navigation.map((item, index) => (
+                  <li key={index}>
+                    <motion.button
+                      whileHover={{ x: 10 }}
+                      onClick={() => scrollToSection(item.href)}
+                      className="block w-full text-left text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
+                    >
+                      <span>{item.name}</span>
+                    </motion.button>
+                  </li>
+                ))}
+              </ul>
+
+              {/* Mobile Action Buttons */}
+              <div className="flex w-full items-center justify-center gap-4 pt-6 border-t border-gray-200/20 dark:border-gray-700/20">
+                {/* Telegram Link */}
+                <motion.a
+                  href="https://t.me/yakutproekt"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="flex items-center justify-center p-3 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-md bg-white/20 dark:bg-gray-800/20"
+                >
+                  <Image
+                    src="/images/telegram.svg"
+                    alt="Telegram"
+                    width={20}
+                    height={20}
+                    className="dark:brightness-0 dark:invert"
+                  />
+                </motion.a>
+
+                {/* Theme Toggle */}
+                <div className="p-1 bg-white/20 dark:bg-gray-800/20 rounded-md">
+                  <ThemeToggle />
+                </div>
               </div>
             </div>
           </div>
