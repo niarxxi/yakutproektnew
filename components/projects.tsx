@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useProjects } from "@/hooks/use-projects";
 import { ProjectModal } from "./project-modal";
 import type { ProjectImage } from "@/types/project";
-import { Building2 } from "lucide-react";
+import { Building2, ChevronDown, Grid3x3, List } from "lucide-react";
 
 export function Projects() {
   const { projectImages, projectCategories } = useProjects();
@@ -18,6 +18,7 @@ export function Projects() {
   );
   const [visibleCount, setVisibleCount] = useState(8);
   const [mounted, setMounted] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Генерируем стабильные случайные значения только после монтирования
   const particleData = useMemo(() => {
@@ -98,9 +99,16 @@ export function Projects() {
 
   const handleCategoryChange = (categoryId: string) => {
     setSelectedCategory(categoryId);
+    setIsMobileMenuOpen(false); // Закрываем мобильное меню при выборе категории
     if (categoryId === "all") {
       setVisibleCount(8);
     }
+  };
+
+  const getCurrentCategoryName = () => {
+    if (selectedCategory === "all") return "Все проекты";
+    const category = projectCategories.find(cat => cat.id === selectedCategory);
+    return category ? category.name : "Все проекты";
   };
 
   return (
@@ -197,13 +205,13 @@ export function Projects() {
           </p>
         </motion.div>
 
-        {/* Category Filter */}
+        {/* Desktop Category Filter */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="flex flex-wrap justify-center gap-2 mb-12"
+          className="hidden md:flex flex-wrap justify-center gap-2 mb-12"
         >
           <Button
             variant={selectedCategory === "all" ? "default" : "outline"}
@@ -228,6 +236,119 @@ export function Projects() {
               </Badge>
             </Button>
           ))}
+        </motion.div>
+
+        {/* Mobile Category Selector */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="md:hidden mb-8"
+        >
+          <div className="relative">
+            <motion.button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="w-full flex items-center justify-between p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl shadow-lg"
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="flex items-center space-x-3">
+                <Grid3x3 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                <span className="font-medium text-gray-900 dark:text-white">
+                  {getCurrentCategoryName()}
+                </span>
+                <Badge variant="secondary">
+                  {selectedCategory === "all" 
+                    ? projectImages.length 
+                    : projectCategories.find(cat => cat.id === selectedCategory)?.count || 0
+                  }
+                </Badge>
+              </div>
+              <motion.div
+                animate={{ rotate: isMobileMenuOpen ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <ChevronDown className="w-5 h-5 text-gray-500" />
+              </motion.div>
+            </motion.button>
+
+            <AnimatePresence>
+              {isMobileMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0, y: -10 }}
+                  animate={{ 
+                    opacity: 1, 
+                    height: "auto", 
+                    y: 0,
+                    transition: {
+                      height: { duration: 0.4, ease: "easeOut" },
+                      opacity: { duration: 0.3, delay: 0.1 },
+                      y: { duration: 0.3, delay: 0.1 }
+                    }
+                  }}
+                  exit={{ 
+                    opacity: 0, 
+                    height: 0, 
+                    y: -10,
+                    transition: {
+                      height: { duration: 0.3, ease: "easeIn" },
+                      opacity: { duration: 0.2 },
+                      y: { duration: 0.2 }
+                    }
+                  }}
+                  className="absolute top-full left-0 right-0 mt-2 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 rounded-xl shadow-xl overflow-hidden z-50"
+                >
+                  <div className="p-2 space-y-1">
+                    <motion.button
+                      onClick={() => handleCategoryChange("all")}
+                      className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
+                        selectedCategory === "all"
+                          ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
+                          : "hover:bg-gray-100 dark:hover:bg-gray-800/50 text-gray-700 dark:text-gray-300"
+                      }`}
+                      whileHover={{ x: 4 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <List className="w-4 h-4" />
+                        <span>Все проекты</span>
+                      </div>
+                      <Badge variant={selectedCategory === "all" ? "default" : "secondary"}>
+                        {projectImages.length}
+                      </Badge>
+                    </motion.button>
+                    
+                    {projectCategories.map((category, index) => (
+                      <motion.button
+                        key={category.id}
+                        onClick={() => handleCategoryChange(category.id)}
+                        className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
+                          selectedCategory === category.id
+                            ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
+                            : "hover:bg-gray-100 dark:hover:bg-gray-800/50 text-gray-700 dark:text-gray-300"
+                        }`}
+                        whileHover={{ x: 4 }}
+                        whileTap={{ scale: 0.98 }}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ 
+                          opacity: 1, 
+                          x: 0,
+                          transition: { delay: index * 0.05 }
+                        }}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <span className="text-left">{category.name}</span>
+                        </div>
+                        <Badge variant={selectedCategory === category.id ? "default" : "secondary"}>
+                          {category.count}
+                        </Badge>
+                      </motion.button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </motion.div>
 
         {/* Projects Grid */}

@@ -101,23 +101,52 @@ class STLLoader {
 // 3D Logo Component
 const STLLogo = memo(({ stlPath = "/models/logo.stl" }: { stlPath?: string }) => {
   const mountRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene>();
   const rendererRef = useRef<THREE.WebGLRenderer>();
   const cameraRef = useRef<THREE.PerspectiveCamera>();
-  // Изменяем тип, чтобы он мог содержать как Mesh, так и Group
   const modelRef = useRef<THREE.Object3D>();
   const frameRef = useRef<number>();
   const mouseRef = useRef({ x: 0, y: 0 });
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dimensions, setDimensions] = useState({ width: 400, height: 400 });
 
   const handleMouseMove = useCallback((event: MouseEvent) => {
-    if (!mountRef.current) return;
+    if (!containerRef.current) return;
     
-    const rect = mountRef.current.getBoundingClientRect();
+    const rect = containerRef.current.getBoundingClientRect();
     mouseRef.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     mouseRef.current.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
   }, []);
+
+  const updateDimensions = useCallback(() => {
+    if (!containerRef.current) return;
+    
+    const containerWidth = containerRef.current.clientWidth;
+    const containerHeight = containerRef.current.clientHeight;
+    
+    // Адаптивные размеры в зависимости от экрана
+    const size = Math.min(containerWidth, containerHeight, window.innerWidth < 768 ? 280 : 400);
+    
+    setDimensions({ width: size, height: size });
+    
+    // Обновляем размеры рендерера и камеры
+    if (rendererRef.current && cameraRef.current) {
+      rendererRef.current.setSize(size, size);
+      cameraRef.current.aspect = 1;
+      cameraRef.current.updateProjectionMatrix();
+    }
+  }, []);
+
+  useEffect(() => {
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    
+    return () => {
+      window.removeEventListener('resize', updateDimensions);
+    };
+  }, [updateDimensions]);
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -131,7 +160,7 @@ const STLLogo = memo(({ stlPath = "/models/logo.stl" }: { stlPath?: string }) =>
       powerPreference: "high-performance"
     });
 
-    renderer.setSize(400, 400);
+    renderer.setSize(dimensions.width, dimensions.height);
     renderer.setClearColor(0x000000, 0);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -139,19 +168,18 @@ const STLLogo = memo(({ stlPath = "/models/logo.stl" }: { stlPath?: string }) =>
     mountRef.current.appendChild(renderer.domElement);
 
     // Яркое освещение для светлого цвета #b9ddff
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); // Сильное рассеянное освещение
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6); // Уменьшена интенсивность
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
     directionalLight.position.set(1, 1, 1);
     directionalLight.castShadow = true;
     scene.add(directionalLight);
 
-    const pointLight = new THREE.PointLight(0xffffff, 0.4, 100); // Белый свет
+    const pointLight = new THREE.PointLight(0xffffff, 0.4, 100);
     pointLight.position.set(-10, 10, 10);
     scene.add(pointLight);
 
-    // Дополнительное мягкое освещение
     const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
     fillLight.position.set(-1, -1, -1);
     scene.add(fillLight);
@@ -171,7 +199,7 @@ const STLLogo = memo(({ stlPath = "/models/logo.stl" }: { stlPath?: string }) =>
       // Основание логотипа - цилиндр с цветом #b9ddff
       const baseGeometry = new THREE.CylinderGeometry(1.5, 1.8, 0.3, 8);
       const baseMaterial = new THREE.MeshLambertMaterial({ 
-        color: 0xb9ddff // RGB(185,221,255)
+        color: 0xb9ddff
       });
       const base = new THREE.Mesh(baseGeometry, baseMaterial);
       base.position.y = -1;
@@ -180,7 +208,7 @@ const STLLogo = memo(({ stlPath = "/models/logo.stl" }: { stlPath?: string }) =>
       // Центральная часть - призма
       const prismGeometry = new THREE.CylinderGeometry(1, 1.3, 1.5, 6);
       const prismMaterial = new THREE.MeshLambertMaterial({ 
-        color: 0xb9ddff // RGB(185,221,255)
+        color: 0xb9ddff
       });
       const prism = new THREE.Mesh(prismGeometry, prismMaterial);
       group.add(prism);
@@ -188,7 +216,7 @@ const STLLogo = memo(({ stlPath = "/models/logo.stl" }: { stlPath?: string }) =>
       // Верхняя часть - пирамида
       const topGeometry = new THREE.ConeGeometry(0.8, 1, 6);
       const topMaterial = new THREE.MeshLambertMaterial({ 
-        color: 0xb9ddff // RGB(185,221,255)
+        color: 0xb9ddff
       });
       const top = new THREE.Mesh(topGeometry, topMaterial);
       top.position.y = 1.25;
@@ -199,7 +227,7 @@ const STLLogo = memo(({ stlPath = "/models/logo.stl" }: { stlPath?: string }) =>
         const angle = (i / 6) * Math.PI * 2;
         const decorGeometry = new THREE.SphereGeometry(0.1, 8, 8);
         const decorMaterial = new THREE.MeshLambertMaterial({ 
-          color: 0xb9ddff // RGB(185,221,255)
+          color: 0xb9ddff
         });
         const decor = new THREE.Mesh(decorGeometry, decorMaterial);
         decor.position.x = Math.cos(angle) * 1.2;
@@ -229,15 +257,13 @@ const STLLogo = memo(({ stlPath = "/models/logo.stl" }: { stlPath?: string }) =>
         
         const size = box.getSize(new THREE.Vector3());
         const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 4 / maxDim;
+        const scale = 5.3 / maxDim;
         geometry.scale(scale, scale, scale);
 
-        // Создаем материал с цветом #b9ddff (RGB 185,221,255)
         const material = new THREE.MeshLambertMaterial({
-          color: 0xb9ddff // Точный цвет RGB(185,221,255)
+          color: 0xb9ddff
         });
 
-        // Создаем меш
         const mesh = new THREE.Mesh(geometry, material);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
@@ -250,7 +276,6 @@ const STLLogo = memo(({ stlPath = "/models/logo.stl" }: { stlPath?: string }) =>
       (error) => {
         console.warn('STL файл не найден, используется стандартная модель');
         
-        // Создаем красивую fallback модель
         const fallbackModel = createFallbackModel();
         scene.add(fallbackModel);
         modelRef.current = fallbackModel;
@@ -264,7 +289,6 @@ const STLLogo = memo(({ stlPath = "/models/logo.stl" }: { stlPath?: string }) =>
       frameRef.current = requestAnimationFrame(animate);
 
       if (modelRef.current) {
-        // Плавное вращение только на основе позиции мыши
         const targetRotationY = mouseRef.current.x * 0.5;
         const targetRotationX = mouseRef.current.y * 0.3;
         
@@ -277,21 +301,12 @@ const STLLogo = memo(({ stlPath = "/models/logo.stl" }: { stlPath?: string }) =>
 
     animate();
 
-    // Добавляем обработчик движения мыши
-    mountRef.current.addEventListener('mousemove', handleMouseMove);
+    // Добавляем обработчик движения мыши к контейнеру
+    if (containerRef.current) {
+      containerRef.current.addEventListener('mousemove', handleMouseMove);
+    }
+    const currentContainer = containerRef.current;
     const currentMount = mountRef.current;
-
-    // Обработка изменения размера
-    const handleResize = () => {
-      if (camera && renderer && mountRef.current) {
-        const size = 400;
-        camera.aspect = 1;
-        camera.updateProjectionMatrix();
-        renderer.setSize(size, size);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
 
     // Очистка
     return () => {
@@ -299,14 +314,13 @@ const STLLogo = memo(({ stlPath = "/models/logo.stl" }: { stlPath?: string }) =>
         cancelAnimationFrame(frameRef.current);
       }
       
-      if (currentMount) {
-        currentMount.removeEventListener('mousemove', handleMouseMove);
-        if (renderer.domElement && currentMount.contains(renderer.domElement)) {
-          currentMount.removeChild(renderer.domElement);
-        }
+      if (currentContainer) {
+        currentContainer.removeEventListener('mousemove', handleMouseMove);
       }
       
-      window.removeEventListener('resize', handleResize);
+      if (currentMount && renderer.domElement && currentMount.contains(renderer.domElement)) {
+        currentMount.removeChild(renderer.domElement);
+      }
       
       if (renderer) {
         renderer.dispose();
@@ -325,29 +339,36 @@ const STLLogo = memo(({ stlPath = "/models/logo.stl" }: { stlPath?: string }) =>
         });
       }
     };
-  }, [stlPath, handleMouseMove]);
+  }, [stlPath, handleMouseMove, dimensions]);
 
   return (
-    <div className="relative w-full h-96 flex items-center justify-center">
+    <div 
+      ref={containerRef}
+      className="relative w-full h-80 md:h-96 flex items-center justify-center p-4"
+    >
       <div 
         ref={mountRef} 
-        className="relative w-96 h-96 cursor-pointer transition-transform hover:scale-105"
+        className="relative cursor-pointer transition-transform hover:scale-105 flex items-center justify-center"
         style={{ 
+          width: dimensions.width,
+          height: dimensions.height,
           filter: 'drop-shadow(0 10px 20px rgba(59, 130, 246, 0.3))',
         }}
       />
       
       {!isLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg">
+        <div className="absolute inset-4 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg">
           <div className="flex flex-col items-center space-y-2">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">Загрузка 3D модели...</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300 text-center px-2">
+              Загрузка 3D модели...
+            </p>
           </div>
         </div>
       )}
       
       {error && (
-        <div className="absolute bottom-2 left-2 right-2 text-xs text-yellow-600 dark:text-yellow-400 text-center">
+        <div className="absolute bottom-2 left-2 right-2 text-xs text-yellow-600 dark:text-yellow-400 text-center px-2">
           {error}
         </div>
       )}
@@ -433,6 +454,7 @@ export const About = memo(() => {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
+            className="order-2 lg:order-1"
           >
             <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
               Наша миссия
@@ -454,7 +476,7 @@ export const About = memo(() => {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="relative"
+            className="relative order-1 lg:order-2"
           >
             <STLLogo stlPath="/models/yakutproekt-logo.stl" />
           </motion.div>
