@@ -410,7 +410,7 @@ export function Hero() {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="text-sm uppercase tracking-widest text-blue-600 dark:text-blue-400 font-medium"
               >
-                Республиканский проектно-изыскательский институт
+                Республиканский проектно-изыскательный институт
               </motion.h2>
             </div>
 
