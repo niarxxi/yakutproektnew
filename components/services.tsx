@@ -13,6 +13,16 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/GlassCard";
+import {
+  MorphingDialog,
+  MorphingDialogTrigger,
+  MorphingDialogContent,
+  MorphingDialogTitle,
+  MorphingDialogSubtitle,
+  MorphingDialogClose,
+  MorphingDialogDescription,
+  MorphingDialogContainer,
+} from "@/components/ui/morphing-dialog";
 
 const services = [
   {
@@ -64,71 +74,6 @@ const services = [
       "Наши специалисты осуществляют авторский надзор на всех этапах строительства, контролируя соответствие выполняемых работ проектной документации. Мы оперативно решаем возникающие вопросы, вносим необходимые корректировки и обеспечиваем высокое качество реализации проекта.",
   },
 ];
-
-const ServiceModal = memo(
-  ({
-    service,
-    isOpen,
-    onClose,
-  }: {
-    service: (typeof services)[0] | null;
-    isOpen: boolean;
-    onClose: () => void;
-  }) => {
-    if (!service) return null;
-
-    return (
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80"
-            onClick={onClose}
-          >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-white dark:bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="relative">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-4 right-4 z-10 bg-white/80 dark:bg-gray-900/80 hover:bg-white dark:hover:bg-gray-900"
-                  onClick={onClose}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-
-                <div className="p-8">
-                  <div className="flex items-center space-x-4 mb-6">
-                    {service.icon}
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {service.title}
-                      </h2>
-                      <p className="text-gray-600 dark:text-gray-300 mt-1">
-                        {service.description}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                    <p>{service.details}</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    );
-  }
-);
 
 const AllServicesModal = memo(
   ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
@@ -233,19 +178,10 @@ const OptimizedParticles = memo(() => (
 ));
 
 export const Services = memo(() => {
-  const [selectedService, setSelectedService] = useState<(typeof services)[0] | null>(null);
   const [isAllServicesOpen, setIsAllServicesOpen] = useState(false);
-
-  const handleServiceClick = useCallback((service: (typeof services)[0]) => {
-    setSelectedService(service);
-  }, []);
 
   const handleMoreServicesClick = useCallback(() => {
     setIsAllServicesOpen(true);
-  }, []);
-
-  const handleCloseServiceModal = useCallback(() => {
-    setSelectedService(null);
   }, []);
 
   const handleCloseAllServicesModal = useCallback(() => {
@@ -261,12 +197,20 @@ export const Services = memo(() => {
         <motion.div
           className="absolute -top-[15%] -right-[15%] w-[50%] h-[50%] rounded-full border-2 border-purple-200/30 dark:border-purple-500/20 will-change-transform"
           animate={{ rotate: 360 }}
-          transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
+          transition={{
+            duration: 120,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "linear",
+          }}
         />
         <motion.div
           className="absolute -bottom-[10%] -left-[10%] w-[40%] h-[40%] rounded-full border-2 border-pink-200/30 dark:border-pink-500/20 will-change-transform"
           animate={{ rotate: -360 }}
-          transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
+          transition={{
+            duration: 100,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "linear",
+          }}
         />
       </div>
 
@@ -282,21 +226,74 @@ export const Services = memo(() => {
             Наши услуги
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Предоставляем полный комплекс услуг по проектированию объектов различного назначения, от концепции до реализации
+            Предоставляем полный комплекс услуг по проектированию объектов
+            различного назначения, от концепции до реализации
           </p>
         </motion.div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {services.map((service, index) => (
-            <GlassCard
+            <MorphingDialog
               key={index}
-              icon={service.icon}
-              title={service.title}
-              description={service.description}
-              index={index}
-              variant="purple"
-              onClick={() => handleServiceClick(service)}
-            />
+              transition={{
+                type: "spring",
+                bounce: 0.05,
+                duration: 0.25,
+              }}
+            >
+              <MorphingDialogTrigger
+                style={{
+                  borderRadius: "16px",
+                }}
+              >
+                <GlassCard
+                  icon={service.icon}
+                  title={service.title}
+                  description={service.description}
+                  index={index}
+                  variant="purple"
+                >
+                  <div />
+                </GlassCard>
+              </MorphingDialogTrigger>
+              <MorphingDialogContainer>
+                <MorphingDialogContent
+                  style={{
+                    borderRadius: "24px",
+                  }}
+                  className="pointer-events-auto relative flex h-auto w-full flex-col overflow-hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-300/40 dark:border-white/10 sm:w-[600px] max-w-[90vw]"
+                >
+                  <div className="p-8">
+                    <div className="flex items-center space-x-4 mb-6">
+                      <div className="p-3 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-sm border border-purple-500/30">
+                        {service.icon}
+                      </div>
+                      <div className="flex-1">
+                        <MorphingDialogTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+                          {service.title}
+                        </MorphingDialogTitle>
+                        <MorphingDialogSubtitle className="text-gray-600 dark:text-gray-300 mt-1">
+                          {service.description}
+                        </MorphingDialogSubtitle>
+                      </div>
+                    </div>
+                    <MorphingDialogDescription
+                      disableLayoutAnimation
+                      variants={{
+                        initial: { opacity: 0, scale: 0.8, y: 100 },
+                        animate: { opacity: 1, scale: 1, y: 0 },
+                        exit: { opacity: 0, scale: 0.8, y: 100 },
+                      }}
+                    >
+                      <div className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                        <p>{service.details}</p>
+                      </div>
+                    </MorphingDialogDescription>
+                  </div>
+                  <MorphingDialogClose className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white" />
+                </MorphingDialogContent>
+              </MorphingDialogContainer>
+            </MorphingDialog>
           ))}
         </div>
 
@@ -313,11 +310,6 @@ export const Services = memo(() => {
         </motion.div>
       </div>
 
-      <ServiceModal
-        service={selectedService}
-        isOpen={!!selectedService}
-        onClose={handleCloseServiceModal}
-      />
       <AllServicesModal
         isOpen={isAllServicesOpen}
         onClose={handleCloseAllServicesModal}

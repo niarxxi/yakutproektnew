@@ -1,5 +1,7 @@
 "use client";
 
+import type React from "react";
+
 import { motion } from "framer-motion";
 import { memo, useRef, useState } from "react";
 
@@ -9,7 +11,7 @@ interface GlassCardProps {
   description: string;
   index: number;
   variant?: "blue" | "purple";
-  onClick?: () => void;
+  children?: React.ReactNode;
 }
 
 export const GlassCard = memo(
@@ -19,7 +21,7 @@ export const GlassCard = memo(
     description,
     index,
     variant = "blue",
-    onClick,
+    children,
   }: GlassCardProps) => {
     const cardRef = useRef<HTMLDivElement>(null);
     const [isHovered, setIsHovered] = useState(false);
@@ -65,6 +67,7 @@ export const GlassCard = memo(
           transformStyle: "preserve-3d",
           minHeight: "280px",
           perspective: 1000,
+          borderRadius: "16px",
         }}
         initial={{ y: 0 }}
         animate={{
@@ -80,7 +83,6 @@ export const GlassCard = memo(
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={handleMouseLeave}
         onMouseMove={handleMouseMove}
-        onClick={onClick}
       >
         {/* Нижнее свечение */}
         <motion.div
@@ -152,6 +154,8 @@ export const GlassCard = memo(
           }}
           transition={{ duration: 0.3, ease: "easeOut" }}
         />
+
+        {children}
       </motion.div>
     );
   }
