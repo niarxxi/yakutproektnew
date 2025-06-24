@@ -213,7 +213,7 @@ export function Header() {
             </div>
 
             {/* Mobile Menu Overlay */}
-            <div className="bg-white/10 dark:bg-gray-900/10 group-data-[state=active]:block mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl backdrop-blur-xl p-6 shadow-2xl shadow-zinc-300/20 md:flex-nowrap lg:hidden absolute top-full left-0 right-0 mt-4">
+            <div className="group-data-[state=active]:block mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl backdrop-blur-xl p-6 shadow-2xl shadow-zinc-300/20 md:flex-nowrap lg:hidden absolute top-full left-0 right-0 mt-4 bg-white/90 dark:bg-gray-900/90 border border-white/30 dark:border-gray-700/40">
               {/* Mobile Navigation Menu */}
               <ul className="space-y-6 text-base">
                 {navigation.map((item, index) => (
@@ -230,7 +230,7 @@ export function Header() {
               </ul>
 
               {/* Mobile Action Buttons */}
-              <div className="flex w-full items-center justify-center gap-4 pt-6 border-t border-gray-200/20 dark:border-gray-700/20">
+              <div className="flex w-full items-center justify-center gap-4 pt-6 border-t border-gray-200/30 dark:border-gray-700/30">
                 {/* Telegram Link */}
                 <motion.a
                   href="https://t.me/yakutproekt"
@@ -238,7 +238,7 @@ export function Header() {
                   rel="noopener noreferrer"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  className="flex items-center justify-center p-3 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-md bg-white/20 dark:bg-gray-800/20"
+                  className="flex items-center justify-center p-3 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-md bg-white/40 dark:bg-gray-800/40"
                 >
                   <Image
                     src="/images/telegram.svg"
@@ -250,7 +250,7 @@ export function Header() {
                 </motion.a>
 
                 {/* Theme Toggle */}
-                <div className="p-1 bg-white/20 dark:bg-gray-800/20 rounded-md">
+                <div className="p-1 bg-white/40 dark:bg-gray-800/40 rounded-md">
                   <ThemeToggle />
                 </div>
               </div>

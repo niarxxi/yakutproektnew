@@ -1,9 +1,10 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useRef, useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Award, Users, Target, Lightbulb } from "lucide-react";
 import { GlassCard } from "@/components/GlassCard";
+import * as THREE from "three";
 
 const advantages = [
   {
@@ -31,6 +32,330 @@ const advantages = [
       "Применение современных технологий и материалов в суровых климатических условиях",
   },
 ];
+
+// STL Loader - упрощенная версия для загрузки STL файлов
+class STLLoader {
+  load(url: string, onLoad: (geometry: THREE.BufferGeometry) => void, onError?: (error: any) => void) {
+    const loader = new THREE.FileLoader();
+    loader.setResponseType('arraybuffer');
+    
+    loader.load(
+      url,
+      (data) => {
+        try {
+          const geometry = this.parse(data as ArrayBuffer);
+          onLoad(geometry);
+        } catch (error) {
+          if (onError) onError(error);
+        }
+      },
+      undefined,
+      onError
+    );
+  }
+
+  parse(data: ArrayBuffer): THREE.BufferGeometry {
+    const view = new DataView(data);
+    const isLittleEndian = true;
+
+    // Пропускаем заголовок (80 байт)
+    let offset = 80;
+    
+    // Читаем количество треугольников
+    const triangles = view.getUint32(offset, isLittleEndian);
+    offset += 4;
+
+    const vertices = [];
+    const normals = [];
+
+    for (let i = 0; i < triangles; i++) {
+      // Нормаль треугольника
+      const nx = view.getFloat32(offset, isLittleEndian);
+      const ny = view.getFloat32(offset + 4, isLittleEndian);
+      const nz = view.getFloat32(offset + 8, isLittleEndian);
+      offset += 12;
+
+      // Три вершины треугольника
+      for (let j = 0; j < 3; j++) {
+        const vx = view.getFloat32(offset, isLittleEndian);
+        const vy = view.getFloat32(offset + 4, isLittleEndian);
+        const vz = view.getFloat32(offset + 8, isLittleEndian);
+        offset += 12;
+        
+        vertices.push(vx, vy, vz);
+        normals.push(nx, ny, nz);
+      }
+
+      // Пропускаем атрибуты (2 байта)
+      offset += 2;
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+    
+    return geometry;
+  }
+}
+
+// 3D Logo Component
+const STLLogo = memo(({ stlPath = "/models/logo.stl" }: { stlPath?: string }) => {
+  const mountRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<THREE.Scene>();
+  const rendererRef = useRef<THREE.WebGLRenderer>();
+  const cameraRef = useRef<THREE.PerspectiveCamera>();
+  // Изменяем тип, чтобы он мог содержать как Mesh, так и Group
+  const modelRef = useRef<THREE.Object3D>();
+  const frameRef = useRef<number>();
+  const mouseRef = useRef({ x: 0, y: 0 });
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleMouseMove = useCallback((event: MouseEvent) => {
+    if (!mountRef.current) return;
+    
+    const rect = mountRef.current.getBoundingClientRect();
+    mouseRef.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouseRef.current.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  }, []);
+
+  useEffect(() => {
+    if (!mountRef.current) return;
+
+    // Инициализация сцены
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ 
+      alpha: true, 
+      antialias: true,
+      powerPreference: "high-performance"
+    });
+
+    renderer.setSize(400, 400);
+    renderer.setClearColor(0x000000, 0);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    mountRef.current.appendChild(renderer.domElement);
+
+    // Яркое освещение для светлого цвета #b9ddff
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); // Сильное рассеянное освещение
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6); // Уменьшена интенсивность
+    directionalLight.position.set(1, 1, 1);
+    directionalLight.castShadow = true;
+    scene.add(directionalLight);
+
+    const pointLight = new THREE.PointLight(0xffffff, 0.4, 100); // Белый свет
+    pointLight.position.set(-10, 10, 10);
+    scene.add(pointLight);
+
+    // Дополнительное мягкое освещение
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
+    fillLight.position.set(-1, -1, -1);
+    scene.add(fillLight);
+
+    // Позиция камеры
+    camera.position.z = 5;
+
+    // Сохраняем ссылки
+    sceneRef.current = scene;
+    rendererRef.current = renderer;
+    cameraRef.current = camera;
+
+    // Функция создания fallback модели (красивый логотип)
+    const createFallbackModel = () => {
+      const group = new THREE.Group();
+      
+      // Основание логотипа - цилиндр с цветом #b9ddff
+      const baseGeometry = new THREE.CylinderGeometry(1.5, 1.8, 0.3, 8);
+      const baseMaterial = new THREE.MeshLambertMaterial({ 
+        color: 0xb9ddff // RGB(185,221,255)
+      });
+      const base = new THREE.Mesh(baseGeometry, baseMaterial);
+      base.position.y = -1;
+      group.add(base);
+      
+      // Центральная часть - призма
+      const prismGeometry = new THREE.CylinderGeometry(1, 1.3, 1.5, 6);
+      const prismMaterial = new THREE.MeshLambertMaterial({ 
+        color: 0xb9ddff // RGB(185,221,255)
+      });
+      const prism = new THREE.Mesh(prismGeometry, prismMaterial);
+      group.add(prism);
+      
+      // Верхняя часть - пирамида
+      const topGeometry = new THREE.ConeGeometry(0.8, 1, 6);
+      const topMaterial = new THREE.MeshLambertMaterial({ 
+        color: 0xb9ddff // RGB(185,221,255)
+      });
+      const top = new THREE.Mesh(topGeometry, topMaterial);
+      top.position.y = 1.25;
+      group.add(top);
+      
+      // Добавляем декоративные элементы
+      for (let i = 0; i < 6; i++) {
+        const angle = (i / 6) * Math.PI * 2;
+        const decorGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+        const decorMaterial = new THREE.MeshLambertMaterial({ 
+          color: 0xb9ddff // RGB(185,221,255)
+        });
+        const decor = new THREE.Mesh(decorGeometry, decorMaterial);
+        decor.position.x = Math.cos(angle) * 1.2;
+        decor.position.z = Math.sin(angle) * 1.2;
+        decor.position.y = 0.5;
+        group.add(decor);
+      }
+      
+      group.castShadow = true;
+      group.receiveShadow = true;
+      
+      return group;
+    };
+
+    // Пытаемся загрузить STL, если не получается - используем fallback
+    const loader = new STLLoader();
+    
+    loader.load(
+      stlPath,
+      (geometry) => {
+        // Центрируем и масштабируем геометрию
+        geometry.computeBoundingBox();
+        const box = geometry.boundingBox!;
+        const center = box.getCenter(new THREE.Vector3());
+        
+        geometry.translate(-center.x, -center.y, -center.z);
+        
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = 4 / maxDim;
+        geometry.scale(scale, scale, scale);
+
+        // Создаем материал с цветом #b9ddff (RGB 185,221,255)
+        const material = new THREE.MeshLambertMaterial({
+          color: 0xb9ddff // Точный цвет RGB(185,221,255)
+        });
+
+        // Создаем меш
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        
+        scene.add(mesh);
+        modelRef.current = mesh;
+        setIsLoaded(true);
+        setError(null);
+      },
+      (error) => {
+        console.warn('STL файл не найден, используется стандартная модель');
+        
+        // Создаем красивую fallback модель
+        const fallbackModel = createFallbackModel();
+        scene.add(fallbackModel);
+        modelRef.current = fallbackModel;
+        setIsLoaded(true);
+        setError('Используется стандартная модель логотипа');
+      }
+    );
+
+    // Анимационный цикл
+    const animate = () => {
+      frameRef.current = requestAnimationFrame(animate);
+
+      if (modelRef.current) {
+        // Плавное вращение только на основе позиции мыши
+        const targetRotationY = mouseRef.current.x * 0.5;
+        const targetRotationX = mouseRef.current.y * 0.3;
+        
+        modelRef.current.rotation.y += (targetRotationY - modelRef.current.rotation.y) * 0.05;
+        modelRef.current.rotation.x += (targetRotationX - modelRef.current.rotation.x) * 0.05;
+      }
+
+      renderer.render(scene, camera);
+    };
+
+    animate();
+
+    // Добавляем обработчик движения мыши
+    mountRef.current.addEventListener('mousemove', handleMouseMove);
+    const currentMount = mountRef.current;
+
+    // Обработка изменения размера
+    const handleResize = () => {
+      if (camera && renderer && mountRef.current) {
+        const size = 400;
+        camera.aspect = 1;
+        camera.updateProjectionMatrix();
+        renderer.setSize(size, size);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // Очистка
+    return () => {
+      if (frameRef.current) {
+        cancelAnimationFrame(frameRef.current);
+      }
+      
+      if (currentMount) {
+        currentMount.removeEventListener('mousemove', handleMouseMove);
+        if (renderer.domElement && currentMount.contains(renderer.domElement)) {
+          currentMount.removeChild(renderer.domElement);
+        }
+      }
+      
+      window.removeEventListener('resize', handleResize);
+      
+      if (renderer) {
+        renderer.dispose();
+      }
+      
+      if (scene) {
+        scene.traverse((object) => {
+          if (object instanceof THREE.Mesh) {
+            object.geometry.dispose();
+            if (Array.isArray(object.material)) {
+              object.material.forEach(material => material.dispose());
+            } else {
+              object.material.dispose();
+            }
+          }
+        });
+      }
+    };
+  }, [stlPath, handleMouseMove]);
+
+  return (
+    <div className="relative w-full h-96 flex items-center justify-center">
+      <div 
+        ref={mountRef} 
+        className="relative w-96 h-96 cursor-pointer transition-transform hover:scale-105"
+        style={{ 
+          filter: 'drop-shadow(0 10px 20px rgba(59, 130, 246, 0.3))',
+        }}
+      />
+      
+      {!isLoaded && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg">
+          <div className="flex flex-col items-center space-y-2">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Загрузка 3D модели...</p>
+          </div>
+        </div>
+      )}
+      
+      {error && (
+        <div className="absolute bottom-2 left-2 right-2 text-xs text-yellow-600 dark:text-yellow-400 text-center">
+          {error}
+        </div>
+      )}
+    </div>
+  );
+});
+
+STLLogo.displayName = "STLLogo";
 
 const OptimizedParticles = memo(() => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -131,12 +456,7 @@ export const About = memo(() => {
             viewport={{ once: true }}
             className="relative"
           >
-            <img
-              src="/images/logo.svg?height=400&width=600&text=ЯКУТПРОЕКТ"
-              alt="ЯКУТПРОЕКТ"
-              className="object-contain"
-              loading="lazy"
-            />
+            <STLLogo stlPath="/models/yakutproekt-logo.stl" />
           </motion.div>
         </div>
 
