@@ -263,16 +263,16 @@ export const Services = memo(() => {
                   }}
                   className="pointer-events-auto relative flex h-auto w-full flex-col overflow-hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-300/40 dark:border-white/10 sm:w-[600px] max-w-[90vw]"
                 >
-                  <div className="p-8">
-                    <div className="flex items-center space-x-4 mb-6">
-                      <div className="p-3 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-sm border border-purple-500/30">
+                  <div className="p-6 sm:p-8">
+                    <div className="flex items-start space-x-4 mb-6">
+                      <div className="p-3 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-sm border border-purple-500/30 flex-shrink-0">
                         {service.icon}
                       </div>
-                      <div className="flex-1">
-                        <MorphingDialogTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <div className="flex-1 min-w-0">
+                        <MorphingDialogTitle className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white leading-tight break-words hyphens-auto pr-8">
                           {service.title}
                         </MorphingDialogTitle>
-                        <MorphingDialogSubtitle className="text-gray-600 dark:text-gray-300 mt-1">
+                        <MorphingDialogSubtitle className="text-gray-600 dark:text-gray-300 mt-2 text-sm sm:text-base leading-relaxed">
                           {service.description}
                         </MorphingDialogSubtitle>
                       </div>
@@ -285,7 +285,7 @@ export const Services = memo(() => {
                         exit: { opacity: 0, scale: 0.8, y: 100 },
                       }}
                     >
-                      <div className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                      <div className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm sm:text-base">
                         <p>{service.details}</p>
                       </div>
                     </MorphingDialogDescription>
