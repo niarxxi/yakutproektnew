@@ -6,27 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "// Новые скрипты для оптимизации": "",
-    "audit:components": "node tools/audit-components.js",
-    "optimize:images": "node tools/optimize-images.js", 
-    "cleanup": "node tools/cleanup.js",
-    "cleanup:safe": "node tools/audit-components.js && echo 'Проверьте результаты перед удалением'",
-    
-    "// Bundle анализ": "",
-    "analyze": "cross-env ANALYZE=true next build",
-    "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
-    "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build",
-    
-    "// Проверки качества": "",
-    "type-check": "tsc --noEmit",
-    "lint:fix": "next lint --fix",
-    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
-    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
-    
-    "// Pre-commit проверки": "",
-    "pre-commit": "lint-staged",
-    "prepare": "husky install"
+    "lint": "next lint"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.0.5",
