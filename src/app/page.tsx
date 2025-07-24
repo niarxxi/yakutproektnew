@@ -2,6 +2,7 @@ import { Preloader } from "@/src/components/layout/preloader";
 import { Header } from "@/src/components/layout/header";
 import { Hero } from "@/src/components/sections/hero";
 import { About } from "@/src/components/sections/about";
+import { News } from "@/src/components/sections/news";
 import { Services } from "@/src/components/sections/services";
 import { Projects } from "@/src/components/sections/projects";
 import { Departments } from "@/src/components/sections/departments";
@@ -18,6 +19,7 @@ export default function Home() {
       <Header />
       <Hero />
       <About />
+      <News />
       <Services />
       <Projects />
       <Departments />

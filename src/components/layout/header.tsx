@@ -11,6 +11,7 @@ import { cn } from "@/src/lib/utils";
 const navigation = [
   { name: "Главная", href: "#home" },
   { name: "О компании", href: "#about" },
+  { name: "Новости", href: "#news" },
   { name: "Услуги", href: "#services" },
   { name: "Проекты", href: "#projects" },
   { name: "Отделы", href: "#departments" },
@@ -86,7 +87,7 @@ export function Header() {
           className={cn(
             "container mx-auto transition-all duration-300",
             isScrolled &&
-              "bg-white/20 dark:bg-gray-900/20 max-w-4xl rounded-2xl border border-white/20 dark:border-gray-700/30 backdrop-blur-xl shadow-lg px-6 mt-2"
+              "bg-white/20 dark:bg-gray-900/20 max-w-5xl rounded-2xl border border-white/20 dark:border-gray-700/30 backdrop-blur-xl shadow-lg px-6 mt-2"
           )}
           data-scrolled={isScrolled}
         >

@@ -262,6 +262,7 @@ export function Footer() {
                   {[
                     { name: "Главная", href: "#home" },
                     { name: "О компании", href: "#about" },
+                    { name: "Новости", href: "#news" },
                     { name: "Услуги", href: "#services" },
                     { name: "Проекты", href: "#projects" },
                     { name: "Отделы", href: "#departments" },

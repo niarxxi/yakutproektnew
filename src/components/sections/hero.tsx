@@ -135,22 +135,6 @@ const ProjectCard = ({
         </motion.div>
       </div>
 
-      {/* Декоративные элементы */}
-      <motion.div
-        className="absolute top-6 right-6 w-20 h-20 rounded-full border-2 border-dashed border-white/30 will-change-transform"
-        animate={hoveredCard === index ? { rotate: 360 } : { rotate: 0 }}
-        transition={{
-          duration: 20,
-          repeat: Number.POSITIVE_INFINITY,
-          ease: "linear",
-        }}
-      />
-      <motion.div
-        className="absolute bottom-10 right-10 w-16 h-16 rounded-full border border-white/20 will-change-transform"
-        animate={hoveredCard === index ? { scale: [1, 1.2, 1] } : { scale: 1 }}
-        transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY }}
-      />
-
       {/* Интерактивные точки */}
       {hoveredCard === index && (
         <>
