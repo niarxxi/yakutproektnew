@@ -21,9 +21,10 @@ import type { TelegramMessage } from "@/src/types/telegram"
 import { useState } from "react"
 
 export function News() {
+  // Автообновление каждые 15 секунд
   const { posts, loading, error, lastUpdate, isRefreshing, retryCount, refreshPosts } = useTelegramPosts({
     autoRefresh: true,
-    refreshInterval: 5 * 60 * 1000, // 5 минут
+    refreshInterval: 15 * 1000,
   })
 
   const [expandedPosts, setExpandedPosts] = useState<Set<number>>(new Set())
@@ -55,29 +56,23 @@ export function News() {
         console.log("Ошибка при попытке поделиться:", err)
       }
     } else {
-      // Fallback для браузеров без поддержки Web Share API
       navigator.clipboard.writeText(`https://t.me/nrxtest/${post.message_id}`)
     }
   }
 
   const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp * 1000)
-    const now = new Date()
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+  const date = new Date(timestamp * 1000)
+  const now = new Date()
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+  const diffInMinutes = Math.floor(diffInSeconds / 60)
+  const diffInHours = Math.floor(diffInMinutes / 60)
 
-    if (diffInHours < 1) {
-      return "Только что"
-    } else if (diffInHours < 24) {
-      return `${diffInHours}ч назад`
-    } else if (diffInHours < 48) {
-      return "Вчера"
-    } else {
-      return date.toLocaleDateString("ru-RU", {
-        day: "2-digit",
-        month: "2-digit",
-      })
-    }
-  }
+  if (diffInMinutes < 1) return "Только что"
+  if (diffInMinutes < 60) return `${diffInMinutes} мин назад`
+  if (diffInHours < 24) return `${diffInHours}ч назад`
+  if (diffInHours < 48) return "Вчера"
+  return date.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" })
+}
 
   const formatText = (text: string, isExpanded = false) => {
     const formattedText = text
@@ -85,8 +80,6 @@ export function News() {
       .replace(/\*(.*?)\*/g, "<em>$1</em>")
       .replace(/`(.*?)`/g, "<code class='bg-gray-200 dark:bg-gray-700 px-1 rounded text-sm'>$1</code>")
       .replace(/\n/g, "<br />")
-
-    // Обрезаем текст для мобильных устройств если не развернут
     if (!isExpanded && text.length > 150) {
       const truncated = text.substring(0, 150) + "..."
       return truncated
@@ -95,7 +88,6 @@ export function News() {
         .replace(/`(.*?)`/g, "<code class='bg-gray-200 dark:bg-gray-700 px-1 rounded text-sm'>$1</code>")
         .replace(/\n/g, "<br />")
     }
-
     return formattedText
   }
 
@@ -124,20 +116,14 @@ export function News() {
         transition={{ duration: 0.3 }}
         className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 mb-4"
       >
-        {/* Заголовок поста */}
         <div className="flex justify-between items-center mb-3">
           <Badge variant="secondary" className="text-xs px-2 py-1">
             #{post.message_id}
           </Badge>
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-500 dark:text-gray-400">{formatDate(post.date)}</span>
-            <Button variant="ghost" size="sm" onClick={() => sharePost(post)} className="h-6 w-6 p-0">
-              <Share2 className="h-3 w-3" />
-            </Button>
           </div>
         </div>
-
-        {/* Текст поста */}
         {post.text && (
           <div className="mb-3">
             <div
@@ -157,8 +143,6 @@ export function News() {
             )}
           </div>
         )}
-
-        {/* Фотографии */}
         {post.photo_urls && post.photo_urls.length > 0 && (
           <div className="mb-3">
             {post.photo_urls.map((photoUrl, index) => (
@@ -176,7 +160,6 @@ export function News() {
                       target.src = "/placeholder.svg?height=200&width=300&text=Изображение+недоступно"
                     }}
                   />
-                  {/* Overlay для мобильных */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-active:opacity-100 sm:group-hover:opacity-100 transition-opacity">
                     <div className="absolute bottom-3 right-3">
                       <Button
@@ -191,7 +174,6 @@ export function News() {
                     </div>
                   </div>
                 </div>
-                {/* Информация о фото */}
                 {post.photo && post.photo[index] && (
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 px-1">
                     📷 {post.photo[index].width}×{post.photo[index].height}
@@ -204,39 +186,23 @@ export function News() {
             ))}
           </div>
         )}
-
-        {/* Видео */}
         {post.video_url && (
           <div className="mb-3">
             <div className="relative w-full h-48 sm:h-56 bg-gray-200 dark:bg-gray-700 rounded-xl overflow-hidden">
-              {post.video_url.includes("placeholder.svg") ? (
-                <div className="w-full h-full flex items-center justify-center bg-gray-800 text-white">
-                  <div className="text-center">
-                    <Play className="h-12 w-12 mx-auto mb-2 opacity-70" />
-                    <p className="text-sm">Видео контент</p>
-                    {post.video && <p className="text-xs opacity-70 mt-1">{formatDuration(post.video.duration)}</p>}
-                  </div>
-                </div>
-              ) : (
-                <video
-                  className="w-full h-full object-cover"
-                  controls
-                  preload="metadata"
-                  playsInline // Важно для мобильных
-                  poster="/placeholder.svg?height=200&width=300&text=Видео"
-                >
-                  <source src={post.video_url} type="video/mp4" />
-                  Ваш браузер не поддерживает воспроизведение видео.
-                </video>
-              )}
-
-              {/* Длительность видео */}
+              <video
+                className="w-full h-full object-cover"
+                controls
+                preload="metadata"
+                playsInline
+                poster="/placeholder.svg?height=200&width=300&text=Видео"
+              >
+                <source src={post.video_url} type="video/mp4" />
+                Ваш браузер не поддерживает воспроизведение видео.
+              </video>
               <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
                 🎥 {post.video && formatDuration(post.video.duration)}
               </div>
             </div>
-
-            {/* Информация о видео */}
             {post.video && (
               <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 px-1">
                 🎥 {post.video.width}×{post.video.height} • {formatDuration(post.video.duration)}
@@ -245,8 +211,6 @@ export function News() {
             )}
           </div>
         )}
-
-        {/* Документы */}
         {post.document_url && (
           <div className="mb-3">
             <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
@@ -279,8 +243,6 @@ export function News() {
             </div>
           </div>
         )}
-
-        {/* Статистика поста */}
         {(post.views || post.forwards) && (
           <div className="flex gap-4 text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-100 dark:border-gray-700">
             {post.views && <span className="flex items-center gap-1">👁 {post.views.toLocaleString()}</span>}
@@ -291,52 +253,13 @@ export function News() {
     )
   }
 
-  // Показываем только первые 3 поста на мобильных, если не нажата кнопка "Показать все"
-  const displayedPosts = showAllPosts ? posts : posts.slice(0, 3)
+  // Показываем только первые 20 постов, если не нажата кнопка "Показать все"
+  const displayedPosts = showAllPosts ? posts : posts.slice(0, 20)
 
   return (
     <>
-      {/* Кастомные стили для скроллбара */}
-      <style jsx global>{`
-        .custom-scrollbar {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: rgba(156, 163, 175, 0.5);
-          border-radius: 3px;
-          transition: background-color 0.2s ease;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: rgba(156, 163, 175, 0.8);
-        }
-        
-        .dark .custom-scrollbar {
-          scrollbar-color: rgba(75, 85, 99, 0.5) transparent;
-        }
-        
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: rgba(75, 85, 99, 0.5);
-        }
-        
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: rgba(75, 85, 99, 0.8);
-        }
-      `}</style>
-
       <section id="news" className="py-12 sm:py-20">
         <div className="container mx-auto px-4">
-          {/* Заголовок */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -351,8 +274,6 @@ export function News() {
               Следите за последними новостями в нашем Telegram канале
             </p>
           </motion.div>
-
-          {/* Виджет */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -360,7 +281,6 @@ export function News() {
             viewport={{ once: true }}
             className="max-w-2xl mx-auto"
           >
-            {/* Заголовок виджета */}
             <div className="bg-white dark:bg-gray-900 rounded-t-2xl p-4 sm:p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 border-b-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
@@ -386,10 +306,7 @@ export function News() {
                 </div>
               </div>
             </div>
-
-            {/* Контейнер постов */}
             <div className="bg-white dark:bg-gray-900 rounded-b-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 border-t-0">
-              {/* Уведомление об ошибке */}
               {error && (
                 <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                   <Alert className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
@@ -401,8 +318,6 @@ export function News() {
                   </Alert>
                 </div>
               )}
-
-              {/* Посты с у��учшенным скроллбаром */}
               <div className="p-4 min-h-[400px] max-h-[70vh] overflow-y-auto custom-scrollbar">
                 {loading && posts.length === 0 ? (
                   <div className="flex items-center justify-center h-64">
@@ -418,9 +333,7 @@ export function News() {
                 ) : displayedPosts.length > 0 ? (
                   <>
                     <div>{displayedPosts.map(renderPost)}</div>
-
-                    {/* Кнопка "Показать все" для мобильных */}
-                    {posts.length > 3 && !showAllPosts && (
+                    {posts.length > 20 && !showAllPosts && (
                       <div className="text-center mt-4">
                         <Button variant="outline" onClick={() => setShowAllPosts(true)} className="w-full sm:w-auto">
                           Показать все посты ({posts.length})
