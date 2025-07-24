@@ -66,12 +66,14 @@ export function News() {
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
   const diffInMinutes = Math.floor(diffInSeconds / 60)
   const diffInHours = Math.floor(diffInMinutes / 60)
+  const diffInDays = Math.floor(diffInHours / 24)
 
   if (diffInMinutes < 1) return "Только что"
   if (diffInMinutes < 60) return `${diffInMinutes} мин назад`
   if (diffInHours < 24) return `${diffInHours}ч назад`
-  if (diffInHours < 48) return "Вчера"
-  return date.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" })
+  if (diffInDays === 1) return "Вчера"
+  if (diffInDays < 7) return `${diffInDays} дн. назад`
+  return date.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit" })
 }
 
   const formatText = (text: string, isExpanded = false) => {
@@ -105,6 +107,7 @@ export function News() {
   }
 
   const renderPost = (post: TelegramMessage) => {
+    const postText = post.text || post.caption
     const isExpanded = expandedPosts.has(post.message_id)
     const hasLongText = post.text && post.text.length > 150
 
@@ -124,11 +127,11 @@ export function News() {
             <span className="text-xs text-gray-500 dark:text-gray-400">{formatDate(post.date)}</span>
           </div>
         </div>
-        {post.text && (
+        {postText && (
           <div className="mb-3">
             <div
               className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: formatText(post.text, isExpanded) }}
+              dangerouslySetInnerHTML={{ __html: formatText(postText, isExpanded) }}
             />
             {hasLongText && (
               <Button

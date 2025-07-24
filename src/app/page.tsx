@@ -14,7 +14,6 @@ import { BackgroundTransition } from "@/src/components/common/background-transit
 export default function Home() {
   return (
     <main className="min-h-screen">
-      <Preloader />
       <BackgroundTransition />
       <Header />
       <Hero />

@@ -36,6 +36,7 @@ export interface TelegramMessage {
   message_id: number
   date: number
   text?: string
+  caption?: string
   photo?: TelegramPhoto[]
   video?: TelegramVideo
   document?: TelegramDocument
