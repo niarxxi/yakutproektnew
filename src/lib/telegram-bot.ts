@@ -77,7 +77,7 @@ export class TelegramBot {
   }
 
   async getChannelPosts(options: GetPostsOptions = {}): Promise<TelegramMessage[]> {
-    const { limit = 20 } = options
+    const { limit = 5 } = options
     // Проверяем статус webhook
     const webhookInfo = await this.getWebhookInfo()
     if (webhookInfo && webhookInfo.url) {

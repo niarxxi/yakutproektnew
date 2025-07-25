@@ -7,10 +7,11 @@ import {
   Clock,
   RefreshCw,
   AlertCircle,
-  Play,
   Download,
   ChevronDown,
-  Share2,
+  X,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react"
 import { Button } from "@/src/components/ui/button"
 import { Alert, AlertDescription } from "@/src/components/ui/alert"
@@ -18,7 +19,108 @@ import { Badge } from "@/src/components/ui/badge"
 import Image from "next/image"
 import { useTelegramPosts } from "@/src/hooks/use-telegram-posts"
 import type { TelegramMessage } from "@/src/types/telegram"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+
+// Add ImageModal component
+function ImageModal({
+  isOpen,
+  onClose,
+  imageUrl,
+  alt,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  imageUrl: string
+  alt: string
+}) {
+  const [zoom, setZoom] = useState(1)
+
+  // Close modal on escape key
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose()
+    }
+
+    if (isOpen) {
+      document.addEventListener("keydown", handleEsc)
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEsc)
+    }
+  }, [isOpen, onClose])
+
+  // Prevent scrolling when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = ""
+    }
+
+    return () => {
+      document.body.style.overflow = ""
+    }
+  }, [isOpen])
+
+  if (!isOpen) return null
+
+  const zoomIn = () => setZoom((prev) => Math.min(prev + 0.25, 3))
+  const zoomOut = () => setZoom((prev) => Math.max(prev - 0.25, 0.5))
+  const resetZoom = () => setZoom(1)
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="relative max-w-full max-h-full overflow-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute top-2 right-2 flex gap-2 z-10">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 p-0"
+            onClick={zoomOut}
+          >
+            <ZoomOut className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 p-0"
+            onClick={zoomIn}
+          >
+            <ZoomIn className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 p-0"
+            onClick={onClose}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+        <div
+          className="relative"
+          style={{ transform: `scale(${zoom})`, transition: "transform 0.2s ease" }}
+          onDoubleClick={resetZoom}
+        >
+          <img
+            src={imageUrl || "/placeholder.svg"}
+            alt={alt}
+            className="max-w-full max-h-[90vh] object-contain"
+            style={{ margin: "auto" }}
+            onError={(e) => {
+              const target = e.target as HTMLImageElement
+              target.src = "/placeholder.svg?height=400&width=600&text=Изображение+недоступно"
+            }}
+          />
+        </div>
+        <div className="absolute bottom-2 left-2 text-xs text-white bg-black/50 px-2 py-1 rounded">
+          Нажмите дважды для сброса масштаба
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export function News() {
   // Автообновление каждые 15 секунд
@@ -29,6 +131,9 @@ export function News() {
 
   const [expandedPosts, setExpandedPosts] = useState<Set<number>>(new Set())
   const [showAllPosts, setShowAllPosts] = useState(false)
+
+  // Add state for modal
+  const [modalImage, setModalImage] = useState<{ url: string; alt: string } | null>(null)
 
   const openTelegramChannel = () => {
     window.open("https://t.me/nrxtest", "_blank")
@@ -61,20 +166,20 @@ export function News() {
   }
 
   const formatDate = (timestamp: number) => {
-  const date = new Date(timestamp * 1000)
-  const now = new Date()
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-  const diffInMinutes = Math.floor(diffInSeconds / 60)
-  const diffInHours = Math.floor(diffInMinutes / 60)
-  const diffInDays = Math.floor(diffInHours / 24)
+    const date = new Date(timestamp * 1000)
+    const now = new Date()
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+    const diffInMinutes = Math.floor(diffInSeconds / 60)
+    const diffInHours = Math.floor(diffInMinutes / 60)
+    const diffInDays = Math.floor(diffInHours / 24)
 
-  if (diffInMinutes < 1) return "Только что"
-  if (diffInMinutes < 60) return `${diffInMinutes} мин назад`
-  if (diffInHours < 24) return `${diffInHours}ч назад`
-  if (diffInDays === 1) return "Вчера"
-  if (diffInDays < 7) return `${diffInDays} дн. назад`
-  return date.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit" })
-}
+    if (diffInMinutes < 1) return "Только что"
+    if (diffInMinutes < 60) return `${diffInMinutes} мин назад`
+    if (diffInHours < 24) return `${diffInHours}ч назад`
+    if (diffInDays === 1) return "Вчера"
+    if (diffInDays < 7) return `${diffInDays} дн. назад`
+    return date.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit" })
+  }
 
   const formatText = (text: string, isExpanded = false) => {
     const formattedText = text
@@ -104,6 +209,16 @@ export function News() {
     const minutes = Math.floor(seconds / 60)
     const remainingSeconds = seconds % 60
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
+  }
+
+  // Add function to open image in modal
+  const openImageModal = (url: string, alt: string) => {
+    setModalImage({ url, alt })
+  }
+
+  // Add function to close modal
+  const closeImageModal = () => {
+    setModalImage(null)
   }
 
   const renderPost = (post: TelegramMessage) => {
@@ -150,7 +265,10 @@ export function News() {
           <div className="mb-3">
             {post.photo_urls.map((photoUrl, index) => (
               <div key={index} className="relative group mb-2 last:mb-0">
-                <div className="relative w-full h-48 sm:h-56 bg-gray-200 dark:bg-gray-700 rounded-xl overflow-hidden">
+                <div
+                  className="relative w-full h-48 sm:h-56 bg-gray-200 dark:bg-gray-700 rounded-xl overflow-hidden cursor-pointer"
+                  onClick={() => openImageModal(photoUrl, `Фото из поста #${post.message_id}`)}
+                >
                   <Image
                     src={photoUrl || "/placeholder.svg"}
                     alt={`Фото из поста #${post.message_id}`}
@@ -168,11 +286,14 @@ export function News() {
                       <Button
                         variant="secondary"
                         size="sm"
-                        onClick={() => window.open(photoUrl, "_blank")}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openImageModal(photoUrl, `Фото из поста #${post.message_id}`)
+                        }}
                         className="bg-white/90 hover:bg-white text-black text-xs px-2 py-1"
                       >
-                        <ExternalLink className="h-3 w-3 mr-1" />
-                        Открыть
+                        <ZoomIn className="h-3 w-3 mr-1" />
+                        Увеличить
                       </Button>
                     </div>
                   </div>
@@ -256,8 +377,8 @@ export function News() {
     )
   }
 
-  // Показываем только первые 20 постов, если не нажата кнопка "Показать все"
-  const displayedPosts = showAllPosts ? posts : posts.slice(0, 20)
+  // Показываем только первые 5 постов, если не нажата кнопка "Показать все"
+  const displayedPosts = showAllPosts ? posts : posts.slice(0, 5)
 
   return (
     <>
@@ -336,7 +457,7 @@ export function News() {
                 ) : displayedPosts.length > 0 ? (
                   <>
                     <div>{displayedPosts.map(renderPost)}</div>
-                    {posts.length > 20 && !showAllPosts && (
+                    {posts.length > 5 && !showAllPosts && (
                       <div className="text-center mt-4">
                         <Button variant="outline" onClick={() => setShowAllPosts(true)} className="w-full sm:w-auto">
                           Показать все посты ({posts.length})
@@ -364,6 +485,11 @@ export function News() {
           </motion.div>
         </div>
       </section>
+
+      {/* Add image modal */}
+      {modalImage && (
+        <ImageModal isOpen={!!modalImage} onClose={closeImageModal} imageUrl={modalImage.url} alt={modalImage.alt} />
+      )}
     </>
   )
 }

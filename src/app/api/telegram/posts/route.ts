@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const limit = Math.min(Number.parseInt(searchParams.get("limit") || "20"), 50)
+    const limit = Math.min(Number.parseInt(searchParams.get("limit") || "5"), 50)
     const offset = Number.parseInt(searchParams.get("offset") || "0")
 
     let botPermissions = null
