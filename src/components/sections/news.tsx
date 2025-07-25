@@ -127,10 +127,11 @@ export function News() {
   const { posts, loading, error, lastUpdate, isRefreshing, retryCount, refreshPosts } = useTelegramPosts({
     autoRefresh: true,
     refreshInterval: 15 * 1000,
+    limit: 5,
   })
 
   const [expandedPosts, setExpandedPosts] = useState<Set<number>>(new Set())
-  const [showAllPosts, setShowAllPosts] = useState(false)
+ 
 
   // Add state for modal
   const [modalImage, setModalImage] = useState<{ url: string; alt: string } | null>(null)
@@ -378,7 +379,7 @@ export function News() {
   }
 
   // Показываем только первые 5 постов, если не нажата кнопка "Показать все"
-  const displayedPosts = showAllPosts ? posts : posts.slice(0, 5)
+  const displayedPosts = posts
 
   return (
     <>
@@ -457,14 +458,6 @@ export function News() {
                 ) : displayedPosts.length > 0 ? (
                   <>
                     <div>{displayedPosts.map(renderPost)}</div>
-                    {posts.length > 5 && !showAllPosts && (
-                      <div className="text-center mt-4">
-                        <Button variant="outline" onClick={() => setShowAllPosts(true)} className="w-full sm:w-auto">
-                          Показать все посты ({posts.length})
-                          <ChevronDown className="h-4 w-4 ml-2" />
-                        </Button>
-                      </div>
-                    )}
                   </>
                 ) : (
                   <div className="flex items-center justify-center h-64">

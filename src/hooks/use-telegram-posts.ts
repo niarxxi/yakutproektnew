@@ -3,10 +3,14 @@ import { usePersistentState } from './use-persistent-state'
 import { postsCache } from '@/src/lib/cache'
 import type { TelegramMessage, TelegramApiResponse } from '@/src/types/telegram'
 
+const APP_VERSION = '1.0.1' // меняйте при деплое новой версии
+const CACHE_TTL = 10 * 60 * 1000 // 10 минут
+
 interface UseTelegramPostsOptions {
   autoRefresh?: boolean
   refreshInterval?: number
   cacheKey?: string
+  limit?: number
 }
 
 interface TelegramPostsState {
@@ -26,30 +30,43 @@ const getCachedPosts = (key: string): TelegramMessage[] | null => {
 export function useTelegramPosts(options: UseTelegramPostsOptions = {}) {
   const {
     autoRefresh = true,
-    refreshInterval = 5 * 60 * 1000, // 5 минут
-    cacheKey = 'telegram-posts'
+    refreshInterval = 5 * 60 * 1000,
+    cacheKey = 'telegram-posts',
+    limit = 5,
   } = options
 
-  // Персистентное состояние
+  // persistent state
   const [persistentPosts, setPersistentPosts] = usePersistentState<TelegramMessage[]>({
     key: `${cacheKey}-data`,
     defaultValue: [],
-    ttl: 10 * 60 * 1000, // 10 минут в localStorage
+    ttl: CACHE_TTL,
   })
 
   const [persistentChannelInfo, setPersistentChannelInfo] = usePersistentState({
     key: `${cacheKey}-channel-info`,
     defaultValue: null,
-    ttl: 60 * 60 * 1000, // 1 час
+    ttl: 60 * 60 * 1000,
   })
 
   const [persistentLastUpdate, setPersistentLastUpdate] = usePersistentState<string | null>({
     key: `${cacheKey}-last-update`,
     defaultValue: null,
-    ttl: 10 * 60 * 1000,
+    ttl: CACHE_TTL,
   })
 
-  // Локальное состояние
+  // version check
+  useEffect(() => {
+    const savedVersion = localStorage.getItem('app-version')
+    if (savedVersion !== APP_VERSION) {
+      postsCache.clear()
+      setPersistentPosts([])
+      setPersistentChannelInfo(null)
+      setPersistentLastUpdate(null)
+      localStorage.setItem('app-version', APP_VERSION)
+    }
+  }, [setPersistentPosts, setPersistentChannelInfo, setPersistentLastUpdate])
+
+  // local state
   const [state, setState] = useState<TelegramPostsState>({
     posts: persistentPosts,
     loading: persistentPosts.length === 0,
@@ -64,27 +81,24 @@ export function useTelegramPosts(options: UseTelegramPostsOptions = {}) {
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const isInitializedRef = useRef(false)
 
-  // Функция для получения постов - убираем state.retryCount из зависимостей
+  // "умный" сброс кэша если устарел
+  useEffect(() => {
+    const lastUpdate = persistentLastUpdate ? new Date(persistentLastUpdate).getTime() : 0
+    if (Date.now() - lastUpdate > CACHE_TTL) {
+      postsCache.clear()
+      setPersistentPosts([])
+      setPersistentChannelInfo(null)
+      setPersistentLastUpdate(null)
+    }
+    // eslint-disable-next-line
+  }, [])
+
+  // fetchPosts с limit
   const fetchPosts = useCallback(async (isManualRefresh = false) => {
-    // Отменяем предыдущий запрос если он есть
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
     }
-
     abortControllerRef.current = new AbortController()
-
-    // Проверяем кэш сначала
-    const cachedPosts = getCachedPosts(cacheKey)
-    if (cachedPosts && !isManualRefresh) {
-      console.log('Загружаем посты из кэша')
-      setState(prev => ({
-        ...prev,
-        posts: cachedPosts,
-        loading: false,
-        error: null,
-      }))
-      return
-    }
 
     setState(prev => ({
       ...prev,
@@ -94,27 +108,20 @@ export function useTelegramPosts(options: UseTelegramPostsOptions = {}) {
     }))
 
     try {
-      console.log('Загружаем посты с сервера...')
-
-      const response = await fetch('/api/telegram/posts', {
+      const response = await fetch(`/api/telegram/posts?limit=${limit}`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         signal: abortControllerRef.current.signal,
       })
 
       const data: TelegramApiResponse = await response.json()
 
-      if (!response.ok) {
-        throw new Error(data.error || `HTTP error! status: ${response.status}`)
-      }
+      if (!response.ok) throw new Error(data.error || `HTTP error! status: ${response.status}`)
 
       if (data.success) {
         const newPosts = data.posts || []
         const now = new Date()
 
-        // Обновляем состояние
         setState(prev => ({
           ...prev,
           posts: newPosts,
@@ -126,41 +133,23 @@ export function useTelegramPosts(options: UseTelegramPostsOptions = {}) {
           channelInfo: data.meta?.channel_info || prev.channelInfo,
         }))
 
-        // Сохраняем в кэш и persistent storage
         postsCache.set(cacheKey, newPosts)
         setPersistentPosts(newPosts)
         setPersistentLastUpdate(now.toISOString())
-        
-        if (data.meta?.channel_info) {
-          setPersistentChannelInfo(data.meta.channel_info)
-        }
-
-        console.log(`Успешно загружено ${newPosts.length} постов`)
+        if (data.meta?.channel_info) setPersistentChannelInfo(data.meta.channel_info)
       } else {
         throw new Error(data.error || 'Не удалось загрузить посты')
       }
     } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        console.log('Запрос был отменен')
-        return
-      }
+      if (err instanceof Error && err.name === 'AbortError') return
 
-      console.error('Ошибка при загрузке постов:', err)
       const errorMessage = err instanceof Error ? err.message : 'Произошла неизвестная ошибка'
-      
       setState(prev => {
         const newRetryCount = prev.retryCount + 1
-        
-        // Автоматический повтор с экспоненциальной задержкой
         if (newRetryCount < 3) {
           const delay = Math.pow(2, newRetryCount - 1) * 1000
-          console.log(`Повтор через ${delay}мс (попытка ${newRetryCount}/3)`)
-          
-          setTimeout(() => {
-            fetchPosts(isManualRefresh)
-          }, delay)
+          setTimeout(() => { fetchPosts(isManualRefresh) }, delay)
         }
-
         return {
           ...prev,
           loading: false,
@@ -170,15 +159,15 @@ export function useTelegramPosts(options: UseTelegramPostsOptions = {}) {
         }
       })
     }
-  }, [cacheKey, setPersistentPosts, setPersistentLastUpdate, setPersistentChannelInfo])
+  }, [cacheKey, setPersistentPosts, setPersistentLastUpdate, setPersistentChannelInfo, limit])
 
-  // Функция для принудительного обновления
   const refreshPosts = useCallback(() => {
-    postsCache.delete(cacheKey) // Очищаем кэш
+    postsCache.delete(cacheKey)
+    setPersistentPosts([])
+    setPersistentLastUpdate(null)
     fetchPosts(true)
-  }, [cacheKey, fetchPosts])
+  }, [cacheKey, fetchPosts, setPersistentPosts, setPersistentLastUpdate])
 
-  // Функция для очистки всех данных
   const clearData = useCallback(() => {
     postsCache.clear()
     setState({
@@ -190,40 +179,28 @@ export function useTelegramPosts(options: UseTelegramPostsOptions = {}) {
       channelInfo: null,
       retryCount: 0,
     })
-    // Очищаем persistent storage
     setPersistentPosts([])
     setPersistentChannelInfo(null)
     setPersistentLastUpdate(null)
   }, [setPersistentPosts, setPersistentChannelInfo, setPersistentLastUpdate])
 
-  // Инициализация - выполняется только один раз
+  // Инициализация: показываем кэш, параллельно обновляем
   useEffect(() => {
     if (!isInitializedRef.current) {
       isInitializedRef.current = true
-      
-      // Первоначальная загрузка только если нет данных
-      if (persistentPosts.length === 0) {
-        fetchPosts()
-      }
+      fetchPosts()
     }
-  }, []) // Пустой массив зависимостей
+    // eslint-disable-next-line
+  }, [])
 
-  // Автообновление - отдельный useEffect
+  // Автообновление
   useEffect(() => {
     if (!autoRefresh) return
-
-    intervalRef.current = setInterval(() => {
-      fetchPosts()
-    }, refreshInterval)
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
+    intervalRef.current = setInterval(() => { fetchPosts() }, refreshInterval)
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
   }, [autoRefresh, refreshInterval, fetchPosts])
 
-  // Обновление состояния при изменении persistent данных - только один раз при инициализации
+  // Обновление состояния при изменении persistent данных
   useEffect(() => {
     if (isInitializedRef.current) {
       setState(prev => ({
@@ -236,15 +213,10 @@ export function useTelegramPosts(options: UseTelegramPostsOptions = {}) {
     }
   }, [persistentPosts, persistentChannelInfo, persistentLastUpdate])
 
-  // Очистка при размонтировании
   useEffect(() => {
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort()
-      }
+      if (intervalRef.current) clearInterval(intervalRef.current)
+      if (abortControllerRef.current) abortControllerRef.current.abort()
     }
   }, [])
 
