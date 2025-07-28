@@ -1,28 +1,26 @@
-"use client";
+"use client"
 
-import { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent } from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
-import { Badge } from "@/src/components/ui/badge";
-import { useProjects } from "@/src/hooks/use-projects";
-import { ProjectModal } from "@/src/components/modals/project-modal";
-import type { ProjectImage } from "@/src/types/project";
-import { Building2, ChevronDown, Grid3x3, List } from "lucide-react";
+import { useState, useEffect, useMemo } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Card, CardContent } from "@/src/components/ui/card"
+import { Button } from "@/src/components/ui/button"
+import { Badge } from "@/src/components/ui/badge"
+import { useProjects } from "@/src/hooks/use-projects"
+import { ProjectModal } from "@/src/components/modals/project-modal"
+import type { ProjectImage } from "@/src/types/project"
+import { ChevronDown, Grid3x3, List } from "lucide-react"
 
 export function Projects() {
-  const { projectImages, projectCategories } = useProjects();
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedProject, setSelectedProject] = useState<ProjectImage | null>(
-    null
-  );
-  const [visibleCount, setVisibleCount] = useState(8);
-  const [mounted, setMounted] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { projectImages, projectCategories } = useProjects()
+  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [selectedProject, setSelectedProject] = useState<ProjectImage | null>(null)
+  const [visibleCount, setVisibleCount] = useState(8)
+  const [mounted, setMounted] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   // Генерируем стабильные случайные значения только после монтирования
   const particleData = useMemo(() => {
-    if (!mounted) return [];
+    if (!mounted) return []
 
     return Array.from({ length: 25 }, (_, i) => ({
       id: i,
@@ -32,11 +30,11 @@ export function Projects() {
       targetY: Math.random() * 1080,
       duration: Math.random() * 3 + 2,
       delay: Math.random() * 2,
-    }));
-  }, [mounted]);
+    }))
+  }, [mounted])
 
   const buildingIconData = useMemo(() => {
-    if (!mounted) return [];
+    if (!mounted) return []
 
     return Array.from({ length: 8 }, (_, i) => ({
       id: i,
@@ -44,31 +42,25 @@ export function Projects() {
       left: Math.random() * 100,
       duration: 20 + i * 3,
       delay: i * 2,
-    }));
-  }, [mounted]);
+    }))
+  }, [mounted])
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const handleCategorySelect = (event: CustomEvent) => {
-      const { category } = event.detail;
-      setSelectedCategory(category);
-    };
+      const { category } = event.detail
+      setSelectedCategory(category)
+    }
 
-    window.addEventListener(
-      "selectProjectCategory",
-      handleCategorySelect as EventListener
-    );
+    window.addEventListener("selectProjectCategory", handleCategorySelect as EventListener)
 
     return () => {
-      window.removeEventListener(
-        "selectProjectCategory",
-        handleCategorySelect as EventListener
-      );
-    };
-  }, []);
+      window.removeEventListener("selectProjectCategory", handleCategorySelect as EventListener)
+    }
+  }, [])
 
   const filteredProjects =
     selectedCategory === "all"
@@ -82,112 +74,34 @@ export function Projects() {
             sport: "Спортивные сооружения",
             plans: "Генеральные планы",
             agriculture: "Сельскохозяйственные объекты",
-          };
-          return project.category === categoryMap[selectedCategory];
-        });
+          }
+          return project.category === categoryMap[selectedCategory]
+        })
 
-  const projectsToShow =
-    selectedCategory === "all"
-      ? filteredProjects.slice(0, visibleCount)
-      : filteredProjects;
-  const hasMoreProjects =
-    selectedCategory === "all" && visibleCount < filteredProjects.length;
+  const projectsToShow = selectedCategory === "all" ? filteredProjects.slice(0, visibleCount) : filteredProjects
+  const hasMoreProjects = selectedCategory === "all" && visibleCount < filteredProjects.length
 
   const handleLoadMore = () => {
-    setVisibleCount((prev) => prev + 8);
-  };
+    setVisibleCount((prev) => prev + 8)
+  }
 
   const handleCategoryChange = (categoryId: string) => {
-    setSelectedCategory(categoryId);
-    setIsMobileMenuOpen(false); // Закрываем мобильное меню при выборе категории
+    setSelectedCategory(categoryId)
+    setIsMobileMenuOpen(false) // Закрываем мобильное меню при выборе категории
     if (categoryId === "all") {
-      setVisibleCount(8);
+      setVisibleCount(8)
     }
-  };
+  }
 
   const getCurrentCategoryName = () => {
-    if (selectedCategory === "all") return "Все проекты";
-    const category = projectCategories.find(cat => cat.id === selectedCategory);
-    return category ? category.name : "Все проекты";
-  };
+    if (selectedCategory === "all") return "Все проекты"
+    const category = projectCategories.find((cat) => cat.id === selectedCategory)
+    return category ? category.name : "Все проекты"
+  }
 
   return (
     <section id="projects" className="relative py-20 overflow-hidden">
-      {/* Плавающие частицы - рендерятся только после монтирования */}
-      {mounted && (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {particleData.map((particle) => (
-            <motion.div
-              key={particle.id}
-              className="absolute w-1 h-1 bg-indigo-400 dark:bg-indigo-500 rounded-full opacity-60"
-              initial={{
-                x: particle.initialX,
-                y: particle.initialY,
-                scale: 0,
-                opacity: 0,
-              }}
-              animate={{
-                x: [particle.initialX, particle.targetX],
-                y: [particle.initialY, particle.targetY],
-                scale: [0, 1, 0],
-                opacity: [0, 0.8, 0],
-              }}
-              transition={{
-                duration: particle.duration,
-                repeat: Number.POSITIVE_INFINITY,
-                delay: particle.delay,
-              }}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Большие декоративные элементы */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] rounded-full border-2 border-indigo-200/30 dark:border-indigo-500/20"
-          animate={{ rotate: 360 }}
-          transition={{
-            duration: 120,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "linear",
-          }}
-        />
-        <motion.div
-          className="absolute -bottom-[15%] -left-[15%] w-[50%] h-[50%] rounded-full border-2 border-blue-200/30 dark:border-blue-500/20"
-          animate={{ rotate: -360 }}
-          transition={{
-            duration: 150,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "linear",
-          }}
-        />
-
-        {/* Архитектурные иконки - рендерятся только после монтирования */}
-        {mounted &&
-          buildingIconData.map((icon) => (
-            <motion.div
-              key={icon.id}
-              className="absolute opacity-[0.05] dark:opacity-[0.1]"
-              style={{
-                top: `${icon.top}%`,
-                left: `${icon.left}%`,
-              }}
-              animate={{
-                y: [0, -30, 0],
-                rotate: [0, 180, 360],
-                scale: [1, 1.2, 1],
-              }}
-              transition={{
-                duration: icon.duration,
-                repeat: Number.POSITIVE_INFINITY,
-                delay: icon.delay,
-              }}
-            >
-              <Building2 className="w-12 h-12 text-indigo-500" />
-            </motion.div>
-          ))}
-      </div>
+      {/* Убираем все декоративные анимации */}
 
       <div className="container mx-auto px-4 relative z-10">
         <motion.div
@@ -197,9 +111,7 @@ export function Projects() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-            Наши проекты
-          </h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">Наши проекты</h2>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             Более 1000 реализованных проектов различной сложности и назначения
           </p>
@@ -254,20 +166,14 @@ export function Projects() {
             >
               <div className="flex items-center space-x-3">
                 <Grid3x3 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                <span className="font-medium text-gray-900 dark:text-white">
-                  {getCurrentCategoryName()}
-                </span>
+                <span className="font-medium text-gray-900 dark:text-white">{getCurrentCategoryName()}</span>
                 <Badge variant="secondary">
-                  {selectedCategory === "all" 
-                    ? projectImages.length 
-                    : projectCategories.find(cat => cat.id === selectedCategory)?.count || 0
-                  }
+                  {selectedCategory === "all"
+                    ? projectImages.length
+                    : projectCategories.find((cat) => cat.id === selectedCategory)?.count || 0}
                 </Badge>
               </div>
-              <motion.div
-                animate={{ rotate: isMobileMenuOpen ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
-              >
+              <motion.div animate={{ rotate: isMobileMenuOpen ? 180 : 0 }} transition={{ duration: 0.3 }}>
                 <ChevronDown className="w-5 h-5 text-gray-500" />
               </motion.div>
             </motion.button>
@@ -276,25 +182,25 @@ export function Projects() {
               {isMobileMenuOpen && (
                 <motion.div
                   initial={{ opacity: 0, height: 0, y: -10 }}
-                  animate={{ 
-                    opacity: 1, 
-                    height: "auto", 
+                  animate={{
+                    opacity: 1,
+                    height: "auto",
                     y: 0,
                     transition: {
                       height: { duration: 0.4, ease: "easeOut" },
                       opacity: { duration: 0.3, delay: 0.1 },
-                      y: { duration: 0.3, delay: 0.1 }
-                    }
+                      y: { duration: 0.3, delay: 0.1 },
+                    },
                   }}
-                  exit={{ 
-                    opacity: 0, 
-                    height: 0, 
+                  exit={{
+                    opacity: 0,
+                    height: 0,
                     y: -10,
                     transition: {
                       height: { duration: 0.3, ease: "easeIn" },
                       opacity: { duration: 0.2 },
-                      y: { duration: 0.2 }
-                    }
+                      y: { duration: 0.2 },
+                    },
                   }}
                   className="absolute top-full left-0 right-0 mt-2 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 rounded-xl shadow-xl overflow-hidden z-50"
                 >
@@ -317,7 +223,7 @@ export function Projects() {
                         {projectImages.length}
                       </Badge>
                     </motion.button>
-                    
+
                     {projectCategories.map((category, index) => (
                       <motion.button
                         key={category.id}
@@ -330,10 +236,10 @@ export function Projects() {
                         whileHover={{ x: 4 }}
                         whileTap={{ scale: 0.98 }}
                         initial={{ opacity: 0, x: -20 }}
-                        animate={{ 
-                          opacity: 1, 
+                        animate={{
+                          opacity: 1,
                           x: 0,
-                          transition: { delay: index * 0.05 }
+                          transition: { delay: index * 0.05 },
                         }}
                       >
                         <div className="flex items-center space-x-3">
@@ -352,10 +258,7 @@ export function Projects() {
         </motion.div>
 
         {/* Projects Grid */}
-        <motion.div
-          layout
-          className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-        >
+        <motion.div layout className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           <AnimatePresence>
             {projectsToShow.map((project, index) => (
               <motion.div
@@ -377,10 +280,10 @@ export function Projects() {
                       className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                       loading="lazy"
                       onError={(e) => {
-                        const target = e.target as HTMLImageElement;
+                        const target = e.target as HTMLImageElement
                         target.src = `/placeholder.svg?height=400&width=600&text=${encodeURIComponent(
-                          project.category
-                        )}`;
+                          project.category,
+                        )}`
                       }}
                     />
                   </div>
@@ -388,12 +291,8 @@ export function Projects() {
                     <Badge variant="outline" className="mb-2">
                       {project.category}
                     </Badge>
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
-                      {project.title}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
-                      {project.description}
-                    </p>
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">{project.title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{project.description}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -409,12 +308,7 @@ export function Projects() {
             transition={{ duration: 0.6 }}
             className="text-center mt-12"
           >
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={handleLoadMore}
-              className="px-8 py-3"
-            >
+            <Button size="lg" variant="outline" onClick={handleLoadMore} className="px-8 py-3 bg-transparent">
               Показать больше проектов
               <Badge variant="secondary" className="ml-2">
                 +{Math.min(8, filteredProjects.length - visibleCount)}
@@ -427,23 +321,13 @@ export function Projects() {
         )}
 
         {projectsToShow.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-12"
-          >
-            <p className="text-gray-600 dark:text-gray-300">
-              Проекты в данной категории не найдены
-            </p>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
+            <p className="text-gray-600 dark:text-gray-300">Проекты в данной категории не найдены</p>
           </motion.div>
         )}
       </div>
 
-      <ProjectModal
-        project={selectedProject}
-        isOpen={!!selectedProject}
-        onClose={() => setSelectedProject(null)}
-      />
+      <ProjectModal project={selectedProject} isOpen={!!selectedProject} onClose={() => setSelectedProject(null)} />
     </section>
-  );
+  )
 }

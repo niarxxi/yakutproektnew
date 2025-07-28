@@ -2,81 +2,81 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Пытаемся загрузить Wremena, но не блокируем рендеринг */
+/* Основной шрифт Akzidenz Grotesk Pro Regular */
 @font-face {
-  font-family: "Wremena";
-  src: url("/fonts/Wremena Light.woff") format("woff");
-  font-weight: 300;
-  font-style: normal;
-  font-display: optional; /* Используем optional вместо swap для избежания блокировки */
-}
-
-@font-face {
-  font-family: "Wremena";
-  src: url("/fonts/Wremena Regular.woff") format("woff");
+  font-family: "Akzidenz Grotesk Pro";
+  src: url("/fonts/akzidenzgroteskpro_regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
-  font-display: optional;
+  font-display: swap;
 }
 
 @font-face {
-  font-family: "Wremena";
-  src: url("/fonts/Wremena Bold.woff") format("woff");
+  font-family: "Akzidenz Grotesk Pro";
+  src: url("/fonts/akzidenzgroteskpro_regular.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Akzidenz Grotesk Pro";
+  src: url("/fonts/akzidenzgroteskpro_regular.ttf") format("truetype");
   font-weight: 700;
   font-style: normal;
-  font-display: optional;
+  font-display: swap;
 }
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    /* Светлая тема - используем новые цвета */
+    --background: 0 0% 100%; /* #FFFFFF */
+    --foreground: 0 0% 0%; /* #000000 */
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 0 0% 0%; /* #000000 */
+    --popover: 0 0% 100%; /* #FFFFFF */
+    --popover-foreground: 0 0% 0%; /* #000000 */
+    --primary: 213 84% 19%; /* #0D2B52 адаптированный для светлой темы как акцент */
+    --primary-foreground: 0 0% 100%; /* #FFFFFF */
+    --secondary: 213 100% 86%; /* #B9DDFF */
+    --secondary-foreground: 0 0% 0%; /* #000000 */
+    --muted: 213 100% 86%; /* #B9DDFF */
+    --muted-foreground: 0 0% 0%; /* #000000 */
+    --accent: 60 17% 81%; /* #DEDEBE */
+    --accent-foreground: 0 0% 0%; /* #000000 */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 213 100% 86%; /* #B9DDFF */
+    --input: 213 100% 86%; /* #B9DDFF */
+    --ring: 213 84% 19%; /* #0D2B52 */
     --radius: 0.5rem;
 
-    /* Typography variables с надежными fallback шрифтами */
-    --font-wremena: "Wremena", "Playfair Display", "Georgia", "Times New Roman",
-      serif;
-    --font-inter: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
-      "Roboto", "Helvetica Neue", Arial, sans-serif;
+    /* Единый шрифт для всего проекта */
+    --font-primary: "Akzidenz Grotesk Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue",
+      Arial, sans-serif;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
+    /* Темная тема - используем новые цвета */
+    --background: 213 84% 19%; /* #0D2B52 */
+    --foreground: 0 0% 100%; /* #FFFFFF */
+    --card: 213 84% 19%; /* #0D2B52 */
+    --card-foreground: 0 0% 100%; /* #FFFFFF */
+    --popover: 213 84% 19%; /* #0D2B52 */
+    --popover-foreground: 0 0% 100%; /* #FFFFFF */
+    --primary: 0 0% 100%; /* #FFFFFF как основной в темной теме */
+    --primary-foreground: 213 84% 19%; /* #0D2B52 */
+    --secondary: 200 43% 18%; /* #1B3644 */
+    --secondary-foreground: 0 0% 100%; /* #FFFFFF */
+    --muted: 200 43% 18%; /* #1B3644 */
+    --muted-foreground: 0 0% 100%; /* #FFFFFF */
+    --accent: 0 0% 19%; /* #303030 */
+    --accent-foreground: 0 0% 100%; /* #FFFFFF */
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 200 43% 18%; /* #1B3644 */
+    --input: 200 43% 18%; /* #1B3644 */
+    --ring: 0 0% 100%; /* #FFFFFF */
   }
 }
 
@@ -87,71 +87,63 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-inter);
+    font-family: var(--font-primary);
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-weight: 400;
   }
 
-  /* Заголовки используют Wremena с надежным fallback */
+  /* Все заголовки используют тот же шрифт */
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    font-family: var(--font-wremena);
+    font-family: var(--font-primary);
     font-weight: 700;
   }
 
-  /* Основной текст использует Inter */
+  /* Весь текст использует единый шрифт */
   p,
   span,
   div,
   button,
   input,
   textarea,
-  label {
-    font-family: var(--font-inter);
+  label,
+  a {
+    font-family: var(--font-primary);
   }
 
   /* Utility classes */
-  .font-wremena {
-    font-family: var(--font-wremena);
+  .font-primary {
+    font-family: var(--font-primary);
   }
 
-  .font-inter {
-    font-family: var(--font-inter);
-  }
-
-  /* Специальные классы для заголовков */
-  .heading-light {
-    font-family: var(--font-wremena);
+  /* Классы для разных весов шрифта */
+  .font-light {
+    font-family: var(--font-primary);
     font-weight: 300;
   }
 
-  .heading-regular {
-    font-family: var(--font-wremena);
+  .font-regular {
+    font-family: var(--font-primary);
     font-weight: 400;
   }
 
-  .heading-bold {
-    font-family: var(--font-wremena);
+  .font-bold {
+    font-family: var(--font-primary);
     font-weight: 700;
   }
 
-  /* Класс для брендинга (логотип) */
+  /* Класс для брендинга */
   .brand-text {
-    font-family: var(--font-wremena);
+    font-family: var(--font-primary);
     font-weight: 700;
   }
 
   /* Плавный переход при загрузке шрифтов */
-  .fonts-loaded h1,
-  .fonts-loaded h2,
-  .fonts-loaded h3,
-  .fonts-loaded h4,
-  .fonts-loaded h5,
-  .fonts-loaded h6,
-  .fonts-loaded .brand-text {
+  .fonts-loaded * {
     transition: font-family 0.3s ease;
   }
 }
@@ -174,42 +166,28 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #b9ddff; /* Светлая тема */
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: #0d2b52; /* Темная тема */
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: #1b3644;
 }
 
 .dark ::-webkit-scrollbar-track {
-  background: #2d3748;
+  background: #1b3644;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #4a5568;
+  background: #b9ddff;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #718096;
-}
-
-.bg-grid-pattern {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
-  background-size: 20px 20px;
-}
-
-.dark .bg-grid-pattern {
-  background-image: linear-gradient(
-      rgba(255, 255, 255, 0.1) 1px,
-      transparent 1px
-    ),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background: #ffffff;
 }
 
 .will-change-transform {

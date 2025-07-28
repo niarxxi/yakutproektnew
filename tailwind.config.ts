@@ -18,7 +18,48 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        primary: [
+          "Akzidenz Grotesk Pro",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "Roboto",
+          "Helvetica Neue",
+          "Arial",
+          "sans-serif",
+        ],
+        sans: [
+          "Akzidenz Grotesk Pro",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "Roboto",
+          "Helvetica Neue",
+          "Arial",
+          "sans-serif",
+        ],
+      },
       colors: {
+        // Кастомные цвета проекта
+        brand: {
+          primary: {
+            light: "#FFFFFF", // Основной светлый
+            dark: "#0D2B52", // Основной темный
+          },
+          secondary: {
+            light: "#B9DDFF", // Дополнительный светлый 1
+            "light-2": "#DEDEBE", // Дополнительный светлый 2
+            dark: "#1B3644", // Дополнительный темный 1
+            "dark-2": "#303030", // Дополнительный темный 2
+          },
+          text: {
+            light: "#000000", // Черный текст для светлой темы
+            dark: "#FFFFFF", // Белый текст для темной темы
+          },
+        },
+
+        // Системные цвета для shadcn/ui
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

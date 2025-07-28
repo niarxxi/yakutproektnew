@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import Link from "next/link";
-import Image from "next/image";
-import { Menu, X } from "lucide-react";
-import { ThemeToggle } from "@/src/components/common/theme-toggle";
-import { cn } from "@/src/lib/utils";
+import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
+import Link from "next/link"
+import Image from "next/image"
+import { Menu, X } from "lucide-react"
+import { ThemeToggle } from "@/src/components/common/theme-toggle"
+import { cn } from "@/src/lib/utils"
 
 const navigation = [
   { name: "Главная", href: "#home" },
@@ -16,56 +16,56 @@ const navigation = [
   { name: "Проекты", href: "#projects" },
   { name: "Отделы", href: "#departments" },
   { name: "Контакты", href: "#contacts" },
-];
+]
 
 export function Header() {
-  const [menuState, setMenuState] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isHydrated, setIsHydrated] = useState(false);
+  const [menuState, setMenuState] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
     const checkScrollPosition = () => {
-      const scrollY = window.scrollY;
-      setIsScrolled(scrollY > 50);
+      const scrollY = window.scrollY
+      setIsScrolled(scrollY > 50)
       if (!isHydrated) {
-        setIsHydrated(true);
+        setIsHydrated(true)
       }
-    };
+    }
 
     // Check immediately after hydration
     if (typeof window !== "undefined") {
-      checkScrollPosition();
+      checkScrollPosition()
     }
 
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
+      setIsScrolled(window.scrollY > 50)
+    }
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true })
 
     // Handle potential scroll restoration
     const handleLoad = () => {
-      checkScrollPosition();
-    };
+      checkScrollPosition()
+    }
 
-    window.addEventListener("load", handleLoad);
+    window.addEventListener("load", handleLoad)
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("load", handleLoad);
-    };
-  }, []);
+      window.removeEventListener("scroll", handleScroll)
+      window.removeEventListener("load", handleLoad)
+    }
+  }, [])
 
   const scrollToSection = (href: string) => {
-    const element = document.querySelector(href);
+    const element = document.querySelector(href)
     if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-      setMenuState(false);
+      element.scrollIntoView({ behavior: "smooth" })
+      setMenuState(false)
       setTimeout(() => {
-        element.scrollIntoView({ behavior: "smooth" });
-      }, 200);
+        element.scrollIntoView({ behavior: "smooth" })
+      }, 200)
     }
-  };
+  }
 
   return (
     <motion.header
@@ -79,37 +79,41 @@ export function Header() {
         delay: isHydrated && !isScrolled ? 0.2 : 0,
       }}
     >
-      <nav
-        data-state={menuState && "active"}
-        className="fixed z-40 w-full px-4 group"
-      >
+      <nav data-state={menuState && "active"} className="fixed z-40 w-full px-4 group">
         <div
           className={cn(
             "container mx-auto transition-all duration-300",
             isScrolled &&
-              "bg-white/20 dark:bg-gray-900/20 max-w-5xl rounded-2xl border border-white/20 dark:border-gray-700/30 backdrop-blur-xl shadow-lg px-6 mt-2"
+              "bg-white/20 dark:bg-gray-900/20 max-w-5xl rounded-2xl border border-white/20 dark:border-gray-700/30 backdrop-blur-xl shadow-lg px-6 mt-2",
           )}
           data-scrolled={isScrolled}
         >
           <div className="flex items-center justify-between py-3 lg:py-4">
             {/* Logo Section - Left */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="flex items-center space-x-2 flex-shrink-0"
-            >
-              <Link href="/" className="flex items-center -space-x-2">
+            <motion.div whileHover={{ scale: 1.05 }} className="flex items-center space-x-2 flex-shrink-0">
+              <Link href="/" className="flex items-center space-x-2">
+                {/* Логотип для светлой темы */}
                 <Image
-                  src="/images/minilogo.svg"
+                  src="/images/logolight.svg"
                   alt="ЯКУТПРОЕКТ"
                   width={0}
                   height={0}
                   sizes="100vw"
-                  className="dark:brightness-110 h-10 w-auto"
+                  className="h-6 w-auto block dark:hidden"
                   priority
                 />
-                <span className="text-xl font-bold text-gray-900 dark:text-white brand-text">
-                  ЯКУТПРОЕКТ
-                </span>
+                {/* Логотип для темной темы */}
+                <Image
+                  src="/images/logodark.svg"
+                  alt="ЯКУТПРОЕКТ"
+                  width={0}
+                  height={0}
+                  sizes="100vw"
+                  className="h-6 w-auto hidden dark:block"
+                  style={{margin: 0}}
+                  priority
+                />
+                <span className="text-xl font-bold text-gray-900 dark:text-white brand-text">ЯКУТПРОЕКТ</span>
               </Link>
             </motion.div>
 
@@ -276,5 +280,5 @@ export function Header() {
         }
       `}</style>
     </motion.header>
-  );
+  )
 }
