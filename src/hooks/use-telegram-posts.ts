@@ -3,7 +3,7 @@ import { usePersistentState } from './use-persistent-state'
 import { postsCache } from '@/src/lib/cache'
 import type { TelegramMessage, TelegramApiResponse } from '@/src/types/telegram'
 
-const APP_VERSION = '1.0.1' // меняйте при деплое новой версии
+const APP_VERSION = '1.0.1'
 const CACHE_TTL = 10 * 60 * 1000 // 10 минут
 
 interface UseTelegramPostsOptions {
@@ -146,16 +146,14 @@ export function useTelegramPosts(options: UseTelegramPostsOptions = {}) {
       const errorMessage = err instanceof Error ? err.message : 'Произошла неизвестная ошибка'
       setState(prev => {
         const newRetryCount = prev.retryCount + 1
-        if (newRetryCount < 3) {
-          const delay = Math.pow(2, newRetryCount - 1) * 1000
-          setTimeout(() => { fetchPosts(isManualRefresh) }, delay)
-        }
+        // ВАЖНО: не очищаем посты при ошибке!
         return {
           ...prev,
           loading: false,
           isRefreshing: false,
           error: errorMessage,
           retryCount: newRetryCount,
+          // posts: prev.posts // оставляем старые посты!
         }
       })
     }

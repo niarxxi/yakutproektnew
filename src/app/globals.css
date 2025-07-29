@@ -29,26 +29,25 @@
 
 @layer base {
   :root {
-    /* Светлая тема - используем новые цвета */
-    --background: 0 0% 100%; /* #FFFFFF */
-    --foreground: 0 0% 0%; /* #000000 */
-    --card: 0 0% 100%; /* #FFFFFF */
-    --card-foreground: 0 0% 0%; /* #000000 */
-    --popover: 0 0% 100%; /* #FFFFFF */
-    --popover-foreground: 0 0% 0%; /* #000000 */
-    --primary: 213 84% 19%; /* #0D2B52 адаптированный для светлой темы как акцент */
-    --primary-foreground: 0 0% 100%; /* #FFFFFF */
-    --secondary: 213 100% 86%; /* #B9DDFF */
-    --secondary-foreground: 0 0% 0%; /* #000000 */
-    --muted: 213 100% 86%; /* #B9DDFF */
-    --muted-foreground: 0 0% 0%; /* #000000 */
-    --accent: 60 17% 81%; /* #DEDEBE */
-    --accent-foreground: 0 0% 0%; /* #000000 */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 213 100% 86%; /* #B9DDFF */
-    --input: 213 100% 86%; /* #B9DDFF */
-    --ring: 213 84% 19%; /* #0D2B52 */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 19%; /* Updated value */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 19%; /* Updated value */
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 19%; /* Updated value */
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 0 0% 19%; /* Updated value */
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 0 0% 19%; /* Updated value */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
 
     /* Единый шрифт для всего проекта */
@@ -57,26 +56,25 @@
   }
 
   .dark {
-    /* Темная тема - используем новые цвета */
-    --background: 213 84% 19%; /* #0D2B52 */
-    --foreground: 0 0% 100%; /* #FFFFFF */
-    --card: 213 84% 19%; /* #0D2B52 */
-    --card-foreground: 0 0% 100%; /* #FFFFFF */
-    --popover: 213 84% 19%; /* #0D2B52 */
-    --popover-foreground: 0 0% 100%; /* #FFFFFF */
-    --primary: 0 0% 100%; /* #FFFFFF как основной в темной теме */
-    --primary-foreground: 213 84% 19%; /* #0D2B52 */
-    --secondary: 200 43% 18%; /* #1B3644 */
-    --secondary-foreground: 0 0% 100%; /* #FFFFFF */
-    --muted: 200 43% 18%; /* #1B3644 */
-    --muted-foreground: 0 0% 100%; /* #FFFFFF */
-    --accent: 0 0% 19%; /* #303030 */
-    --accent-foreground: 0 0% 100%; /* #FFFFFF */
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 200 43% 18%; /* #1B3644 */
-    --input: 200 43% 18%; /* #1B3644 */
-    --ring: 0 0% 100%; /* #FFFFFF */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 0 0% 19%; /* Updated value */
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 0 0% 19%; /* Updated value */
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
   }
 }
 
@@ -146,6 +144,11 @@
   .fonts-loaded * {
     transition: font-family 0.3s ease;
   }
+
+  /* Новый класс для текста */
+  .text-custom-black {
+    color: #303030;
+  }
 }
 
 @layer utilities {
@@ -166,28 +169,39 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  background: #b9ddff; /* Светлая тема */
+  background: #f1f1f1;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #0d2b52; /* Темная тема */
+  background: #c1c1c1;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #1b3644;
+  background: #a8a8a8;
 }
 
 .dark ::-webkit-scrollbar-track {
-  background: #1b3644;
+  background: #2d3748;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #b9ddff;
+  background: #4a5568;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #ffffff;
+  background: #718096;
+}
+
+.bg-grid-pattern {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.dark .bg-grid-pattern {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
 }
 
 .will-change-transform {

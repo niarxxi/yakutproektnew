@@ -46,7 +46,6 @@ const ProjectCard = ({
   index,
   activeIndex,
   hoveredCard,
-  mousePosition,
   onHover,
   onLeave,
   onClick,
@@ -55,95 +54,168 @@ const ProjectCard = ({
   index: number
   activeIndex: number
   hoveredCard: number | null
-  mousePosition: { x: number; y: number }
   onHover: () => void
   onLeave: () => void
   onClick: () => void
 }) => (
   <motion.div
-    className={`absolute inset-0 rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 will-change-transform ${
-      activeIndex === index ? "z-20 opacity-100" : "z-10 opacity-0"
+    className={`absolute inset-0 rounded-2xl rounded-tl-none rounded-bl-none overflow-hidden shadow-2xl cursor-pointer ${
+      activeIndex === index ? "z-20" : "z-10"
     }`}
     initial={false}
     animate={{
-      rotateY: activeIndex === index ? 0 : 30,
-      scale: activeIndex === index ? 1 : 0.9,
-      x: activeIndex === index ? mousePosition.x * 20 - 10 : 0,
-      y: activeIndex === index ? mousePosition.y * 20 - 10 : 0,
+      opacity: activeIndex === index ? 1 : 0,
+      scale: activeIndex === index ? 1 : 0.8,
+      rotateX: activeIndex === index ? 0 : -15,
+      filter: activeIndex === index ? "blur(0px)" : "blur(4px)",
     }}
-    transition={{ duration: 0.7 }}
+    transition={{
+      duration: 0.8,
+      ease: [0.25, 0.46, 0.45, 0.94],
+    }}
     onMouseEnter={onHover}
     onMouseLeave={onLeave}
-    style={{ willChange: "transform" }}
+    onClick={onClick}
+    style={{
+      willChange: "transform, opacity, filter",
+      transformStyle: "preserve-3d",
+    }}
   >
-    {/* Фоновое изображение с наложением */}
-    <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${card.bgImage})` }} />
-    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0D2B52]/70 to-[#0D2B52]/90" />
+    {/* Фоновое изображение с параллакс эффектом */}
+    <motion.div
+      className="absolute inset-0 bg-cover bg-center"
+      style={{ backgroundImage: `url(${card.bgImage})` }}
+      animate={{
+        scale: hoveredCard === index ? 1.1 : 1,
+      }}
+      transition={{ duration: 0.6 }}
+    />
+
+    {/* Динамическое наложение */}
+    <motion.div
+      className="absolute inset-0"
+      animate={{
+        background:
+          hoveredCard === index
+            ? "linear-gradient(135deg, rgba(13,43,82,0.3) 0%, rgba(27,54,68,0.7) 50%, rgba(13,43,82,0.9) 100%)"
+            : "linear-gradient(to bottom, transparent 0%, rgba(13,43,82,0.7) 70%, rgba(13,43,82,0.9) 100%)",
+      }}
+      transition={{ duration: 0.4 }}
+    />
 
     {/* Контент карточки */}
     <div className="relative h-full flex flex-col p-8 text-white">
       {/* Верхняя часть с иконкой */}
       <div className="mb-auto">
         <motion.div
-          className={`p-4 rounded-xl bg-gradient-to-br ${card.color} w-16 h-16 flex items-center justify-center mb-6 will-change-transform`}
-          whileHover={{ scale: 1.1, rotate: 5 }}
-          animate={
-            hoveredCard === index
-              ? {
-                  y: [0, -10, 0],
-                  transition: { repeat: Number.POSITIVE_INFINITY, duration: 2 },
-                }
-              : {}
-          }
+          className={`p-4 rounded-xl bg-gradient-to-br ${card.color} w-16 h-16 flex items-center justify-center mb-6`}
+          animate={{
+            rotate: hoveredCard === index ? [0, -5, 5, 0] : 0,
+            scale: hoveredCard === index ? 1.1 : 1,
+            boxShadow: hoveredCard === index ? "0 20px 40px rgba(0,0,0,0.3)" : "0 10px 20px rgba(0,0,0,0.2)",
+          }}
+          transition={{
+            rotate: { duration: 0.6, ease: "easeInOut" },
+            scale: { duration: 0.3 },
+            boxShadow: { duration: 0.3 },
+          }}
         >
           {card.icon}
         </motion.div>
       </div>
 
       {/* Нижняя часть с текстом */}
-      <div>
-        <motion.h3 className="text-3xl font-bold mb-4" animate={hoveredCard === index ? { scale: 1.05 } : { scale: 1 }}>
+      <motion.div
+        animate={{
+          y: hoveredCard === index ? -10 : 0,
+        }}
+        transition={{ duration: 0.3 }}
+      >
+        <motion.h3
+          className="text-3xl font-bold mb-4"
+          animate={{
+            scale: hoveredCard === index ? 1.05 : 1,
+            textShadow: hoveredCard === index ? "0 4px 8px rgba(0,0,0,0.3)" : "0 2px 4px rgba(0,0,0,0.1)",
+          }}
+          transition={{ duration: 0.3 }}
+        >
           {card.title}
         </motion.h3>
-        <p className="text-white mb-6 text-lg">{card.description}</p>
+
+        <motion.p
+          className="text-white mb-6 text-lg"
+          animate={{
+            opacity: hoveredCard === index ? 1 : 0.9,
+          }}
+          transition={{ duration: 0.3 }}
+        >
+          {card.description}
+        </motion.p>
 
         <motion.div
           className="flex items-center text-[#B9DDFF] font-medium cursor-pointer"
-          initial={{ x: 0 }}
-          animate={hoveredCard === index ? { x: 10 } : { x: 0 }}
-          onClick={onClick}
+          animate={{
+            x: hoveredCard === index ? 10 : 0,
+            color: hoveredCard === index ? "#FFFFFF" : "#B9DDFF",
+          }}
+          transition={{ duration: 0.3 }}
         >
           Подробнее
-          <ArrowRight className="ml-2 h-4 w-4" />
+          <motion.div
+            animate={{
+              x: hoveredCard === index ? 5 : 0,
+              rotate: hoveredCard === index ? 45 : 0,
+            }}
+            transition={{ duration: 0.3 }}
+          >
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </motion.div>
         </motion.div>
-      </div>
+      </motion.div>
 
-      {/* Интерактивные точки */}
+      {/* Анимированные частицы */}
       {hoveredCard === index && (
         <>
-          <motion.div
-            className="absolute top-1/3 right-8 w-2 h-2 rounded-full bg-[#B9DDFF] will-change-transform"
-            animate={{ scale: [1, 1.5, 1], opacity: [0.7, 1, 0.7] }}
-            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-          />
-          <motion.div
-            className="absolute bottom-1/3 left-8 w-3 h-3 rounded-full bg-[#DEDEBE] will-change-transform"
-            animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0.8, 0.5] }}
-            transition={{
-              duration: 2.5,
-              repeat: Number.POSITIVE_INFINITY,
-              delay: 0.5,
-            }}
-          />
+          {[...Array(6)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 rounded-full bg-[#B9DDFF]"
+              style={{
+                left: `${20 + i * 15}%`,
+                top: `${30 + (i % 2) * 20}%`,
+              }}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{
+                opacity: [0, 1, 0],
+                scale: [0, 1.5, 0],
+                y: [0, -20, -40],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Number.POSITIVE_INFINITY,
+                delay: i * 0.2,
+                ease: "easeOut",
+              }}
+            />
+          ))}
         </>
       )}
     </div>
+
+    {/* Граница при наведении */}
+    <motion.div
+      className="absolute inset-0 rounded-2xl rounded-tl-none rounded-bl-none border-2 border-[#B9DDFF]"
+      initial={{ opacity: 0 }}
+      animate={{
+        opacity: hoveredCard === index ? 0.6 : 0,
+      }}
+      transition={{ duration: 0.3 }}
+    />
   </motion.div>
 )
 
 export function Hero() {
   const [isContactOpen, setIsContactOpen] = useState(false)
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [activeIndex, setActiveIndex] = useState(0)
   const [hoveredCard, setHoveredCard] = useState<number | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -151,32 +223,8 @@ export function Hero() {
   const isMobile = useIsMobile()
 
   // Параллакс эффекты с оптимизацией
-  const y1 = useTransform(scrollY, [0, 500], [0, -150])
-  const y2 = useTransform(scrollY, [0, 500], [0, -50])
-  const y3 = useTransform(scrollY, [0, 500], [0, -200])
   const opacity = useTransform(scrollY, [0, 300], [1, 0])
   const scale = useTransform(scrollY, [0, 300], [1, 0.9])
-
-  // Оптимизированное отслеживание движения мыши
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect()
-      setMousePosition({
-        x: (e.clientX - rect.left) / rect.width,
-        y: (e.clientY - rect.top) / rect.height,
-      })
-    }
-  }, [])
-
-  useEffect(() => {
-    const container = containerRef.current
-    if (container && !isMobile) {
-      container.addEventListener("mousemove", handleMouseMove, {
-        passive: true,
-      })
-      return () => container.removeEventListener("mousemove", handleMouseMove)
-    }
-  }, [handleMouseMove, isMobile])
 
   // Автоматическое переключение активного элемента
   useEffect(() => {
@@ -184,6 +232,15 @@ export function Hero() {
       setActiveIndex((prev) => (prev + 1) % 3)
     }, 5000)
     return () => clearInterval(interval)
+  }, [])
+
+  // Мемоизированные функции обработки событий
+  const handleHover = useCallback((index: number) => {
+    setHoveredCard(index)
+  }, [])
+
+  const handleLeave = useCallback(() => {
+    setHoveredCard(null)
   }, [])
 
   // Мемоизированные функции навигации
@@ -256,12 +313,135 @@ export function Hero() {
     [],
   )
 
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const animationFrameRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+
+    const resizeCanvas = () => {
+      const container = canvas.parentElement
+      if (container) {
+        canvas.width = container.clientWidth
+        canvas.height = container.clientHeight
+      }
+    }
+
+    resizeCanvas()
+    window.addEventListener("resize", resizeCanvas)
+
+    // Animation variables
+    let startTime = Date.now()
+    const animationDuration = 3000 // 3 seconds
+
+    const animate = () => {
+      const currentTime = Date.now()
+      const elapsed = currentTime - startTime
+
+      // Reset animation if completed
+      if (elapsed > animationDuration + 2000) {
+        startTime = currentTime
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      // Light theme colors
+      const lightColors = ["#0D2B52", "#1B3644", "#303030"]
+      // Dark theme colors
+      const darkColors = ["#F5F5F7", "#B9DDFF", "#DEDEBE"]
+
+      // Check if dark mode
+      const isDark = document.documentElement.classList.contains("dark")
+      const colors = isDark ? darkColors : lightColors
+
+      // Create gradient
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
+      gradient.addColorStop(0, colors[0])
+      gradient.addColorStop(0.5, colors[1])
+      gradient.addColorStop(1, colors[2])
+
+      ctx.strokeStyle = gradient
+      ctx.lineWidth = 2
+
+      // Получить текущее значение opacity из scrollY
+      const currentOpacity = Math.max(0, 1 - scrollY.get() / 300)
+      ctx.globalAlpha = currentOpacity * 0.6 // 0.6 - базовая прозрачность
+
+      // Центральная точка пересечения
+      const centerX = canvas.width * 0.5
+      const centerY = canvas.height * 0.5
+
+      // Horizontal line (left to right) - через весь компонент
+      const horizontalProgress = Math.min((elapsed - 0) / 1500, 1)
+      if (horizontalProgress > 0) {
+        const startX = 0
+        const endX = canvas.width
+        const currentX = startX + (endX - startX) * horizontalProgress
+
+        ctx.beginPath()
+        ctx.moveTo(startX, centerY)
+        ctx.lineTo(currentX, centerY)
+        ctx.stroke()
+      }
+
+      // Vertical line (снизу вверх) - от "Узнать больше" до header
+      const verticalProgress = Math.min((elapsed - 500) / 1500, 1)
+      if (verticalProgress > 0) {
+        const startY = canvas.height * 0.93 // Начать снизу от "Узнать больше"
+        const endY = canvas.height * 0.1 // До header
+        const currentY = startY + (endY - startY) * verticalProgress
+
+        ctx.beginPath()
+        ctx.moveTo(centerX, startY)
+        ctx.lineTo(centerX, currentY)
+        ctx.stroke()
+      }
+
+      // Diagonal line (bottom-left to top-right) - через весь компонент
+      const diagonalProgress = Math.min((elapsed - 1000) / 2000, 1)
+      if (diagonalProgress > 0) {
+        const startX = 0
+        const startY = canvas.height
+        const endX = canvas.width
+        const endY = 0
+
+        const currentX = startX + (endX - startX) * diagonalProgress
+        const currentY = startY + (endY - startY) * diagonalProgress
+
+        ctx.beginPath()
+        ctx.moveTo(startX, startY)
+        ctx.lineTo(currentX, currentY)
+        ctx.stroke()
+      }
+
+      // Сбросить globalAlpha
+      ctx.globalAlpha = 1
+
+      animationFrameRef.current = requestAnimationFrame(animate)
+    }
+
+    animate()
+
+    return () => {
+      window.removeEventListener("resize", resizeCanvas)
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current)
+      }
+    }
+  }, [scrollY])
+
   return (
     <section
       ref={containerRef}
       id="home"
       className="relative min-h-screen flex flex-col justify-center overflow-hidden md:pt-0 pt-20"
     >
+      {/* Декоративные линии на Canvas - скрыты на экранах меньше 1024px */}
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none z-0 hidden lg:block" />
+
       {/* Основной контент */}
       <div className="container mx-auto px-4 relative z-10 flex flex-col h-full justify-center">
         <motion.div style={{ opacity, scale }} className="grid lg:grid-cols-2 gap-12 items-center">
@@ -273,19 +453,13 @@ export function Hero() {
             className="flex flex-col justify-center"
           >
             <div className="relative mb-6">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: "40%" }}
-                transition={{ duration: 1.5, delay: 0.5 }}
-                className="absolute h-1 bg-gradient-to-r from-black to-[#0D2B52] dark:from-white dark:to-[#B9DDFF] rounded-full -top-4 left-0"
-              />
               <motion.h2
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="text-sm uppercase tracking-widest text-[#0D2B52] dark:text-[#B9DDFF] font-medium"
               >
-                Республиканский проектно-изыскательный институт
+                Республиканский проектно-изыскательский институт
               </motion.h2>
             </div>
 
@@ -293,19 +467,13 @@ export function Hero() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6"
+              className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-4 mt-4"
             >
-              <span className="block brand-text text-black dark:text-white">Проектируем</span>
+              <span className="block brand-text text-dark-2 dark:text-white">Проектируем</span>
               <span className="relative">
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#0D2B52] via-[#1B3644] to-[#0D2B52] dark:from-[#B9DDFF] dark:via-white dark:to-[#B9DDFF] bg-size-200 animate-gradient pb-4 brand-text">
                   будущее Якутии
                 </span>
-                <motion.span
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ duration: 1, delay: 1.2 }}
-                  className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-[#0D2B52] via-[#1B3644] to-[#0D2B52] dark:from-[#B9DDFF] dark:via-white dark:to-[#B9DDFF] origin-left"
-                />
               </span>
             </motion.h1>
 
@@ -313,7 +481,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
-              className="text-lg md:text-xl text-black dark:text-white mb-8 max-w-lg mt-4"
+              className="text-lg md:text-xl text-black dark:text-white mb-8 max-w-lg mt-12"
             >
               Ведущий проектный институт с более чем 20-летним опытом. Создаем архитектурные решения, которые формируют
               облик региона.
@@ -339,15 +507,17 @@ export function Hero() {
                 </Button>
               </motion.div>
 
-              <motion.div whileHover={{ scale: 1.05, y: -5 }} whileTap={{ scale: 0.95 }}>
+              <motion.div whileHover={{ scale: 1.05, y: -5 }} whileTap={{ scale: 0.95 }} className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-[#0D2B52] to-[#1B3644] dark:from-[#B9DDFF] dark:to-white rounded-lg blur opacity-60 group-hover:opacity-100 transition duration-200" />
                 <Button
                   size="lg"
-                  variant="outline"
                   onClick={scrollToProjects}
-                  className="px-8 py-6 text-lg font-medium border-2 border-black dark:border-white hover:border-[#0D2B52] dark:hover:border-[#B9DDFF] group bg-transparent text-black dark:text-white hover:bg-[#0D2B52] hover:text-white dark:hover:bg-[#B9DDFF] dark:hover:text-black"
+                  className="relative bg-white dark:bg-[#0D2B52] text-black dark:text-white hover:text-white dark:hover:text-white hover:bg-[#0D2B52] dark:hover:bg-[#B9DDFF] dark:hover:text-black border-0 px-8 py-6 text-lg font-medium"
                 >
-                  <Play className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                  Наши проекты
+                  <span className="relative z-10 flex items-center">
+                    <Play className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                    Наши проекты
+                  </span>
                 </Button>
               </motion.div>
             </motion.div>
@@ -370,10 +540,10 @@ export function Hero() {
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 1, delay: 0.3 }}
-            className="relative h-[500px] hidden lg:block"
+            className="relative hidden lg:block"
           >
-            <div className="relative h-full w-full">
-              {/* Карточки проектов с новыми эффектами */}
+            {/* Фиксированный контейнер под горизонтальной линией и впритык к вертикальной */}
+            <div className="absolute top-[50%] -left-6 h-[375px] w-[500px] xl:w-[830px] xl:h-[405px]">
               <div className="relative h-full w-full">
                 {projectCards.map((card, index) => (
                   <ProjectCard
@@ -382,28 +552,31 @@ export function Hero() {
                     index={index}
                     activeIndex={activeIndex}
                     hoveredCard={hoveredCard}
-                    mousePosition={mousePosition}
-                    onHover={() => setHoveredCard(index)}
-                    onLeave={() => setHoveredCard(null)}
+                    onHover={() => handleHover(index)}
+                    onLeave={handleLeave}
                     onClick={() => scrollToProjectsWithCategory(card.category)}
                   />
                 ))}
-              </div>
 
-              {/* Индикаторы */}
-              <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 flex space-x-3">
-                {projectCards.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setActiveIndex(index)}
-                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                      activeIndex === index
-                        ? "bg-[#0D2B52] dark:bg-[#B9DDFF] scale-125"
-                        : "bg-black/30 dark:bg-white/30"
-                    }`}
-                    aria-label={`Показать проект ${index + 1}`}
-                  />
-                ))}
+                {/* Индикаторы справа от контейнера */}
+                <div className="absolute top-1/2 -translate-y-1/2 -right-16 flex flex-col space-y-4">
+                  {projectCards.map((_, index) => (
+                    <motion.button
+                      key={index}
+                      onClick={() => setActiveIndex(index)}
+                      className={`w-4 h-4 rounded-full transition-all duration-300 ${
+                        activeIndex === index ? "bg-[#0D2B52] dark:bg-[#B9DDFF]" : "bg-black/30 dark:bg-white/30"
+                      }`}
+                      animate={{
+                        scale: activeIndex === index ? 1.25 : 1,
+                      }}
+                      whileHover={{ scale: activeIndex === index ? 1.4 : 1.2 }}
+                      whileTap={{ scale: 0.9 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      aria-label={`Показать проект ${index + 1}`}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>
@@ -415,7 +588,7 @@ export function Hero() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 2, duration: 1 }}
-        className="absolute bottom-8 left-0 right-0 mx-auto w-full flex justify-center items-center"
+        className="absolute bottom-1 left-0 right-0 mx-auto w-full flex justify-center items-center"
         onClick={scrollToNextSection}
       >
         <div className="flex flex-col items-center cursor-pointer">
