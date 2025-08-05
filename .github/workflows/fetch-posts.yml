@@ -1,0 +1,21 @@
+name: Fetch Telegram Posts
+
+on:
+  schedule:
+    - cron: '*/5 * * * *' # Каждые 5 минут
+  workflow_dispatch:
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npm run fetch-posts
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHANNEL_USERNAME: ${{ secrets.TELEGRAM_CHANNEL_USERNAME }}
