@@ -45,7 +45,7 @@ export interface TelegramMessage {
   reply_markup?: any
   chat?: TelegramChat
   // Обработанные URL медиафайлов
-  photo_urls?: string[]
+  photo_url?: string
   video_url?: string
   document_url?: string
 }

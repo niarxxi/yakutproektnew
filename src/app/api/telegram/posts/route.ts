@@ -5,10 +5,11 @@ const MONGODB_URI = process.env.MONGODB_URI!;
 const DB_NAME = process.env.MONGODB_DB || "telegram";
 const COLLECTION = "posts";
 
+// Кэшируем клиент между вызовами (для serverless)
 let cachedClient: MongoClient | null = null;
 
 async function getClient() {
-  if (cachedClient && cachedClient.topology?.isConnected()) return cachedClient;
+  if (cachedClient) return cachedClient;
   cachedClient = new MongoClient(MONGODB_URI);
   await cachedClient.connect();
   return cachedClient;
