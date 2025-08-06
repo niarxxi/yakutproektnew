@@ -50,16 +50,13 @@ export async function GET(request: NextRequest) {
   try {
     const client = await getClient();
     const db = client.db();
-    const posts = await db.collection("posts").find({}).toArray();
-    console.log("Posts in DB:", posts.length);
-    
+    const postsCollection = db.collection("posts");
 
-    // Получаем последний update_id из базы
-    const lastPost = await posts.find().sort({ update_id: -1 }).limit(1).next();
+    // Получаем последний update_id из базы (правильно через курсор, не через массив!)
+    const lastPost = await postsCollection.find().sort({ update_id: -1 }).limit(1).next();
     let offset = lastPost ? lastPost.update_id + 1 : 0;
 
     const updates = await getUpdates(offset);
-    console.log("updates:", updates);
     let saved = 0;
     for (const update of updates) {
       if (
@@ -73,7 +70,7 @@ export async function GET(request: NextRequest) {
         let post = update.channel_post;
         post = await processMedia(post);
 
-        await posts.updateOne(
+        await postsCollection.updateOne(
           { message_id: post.message_id },
           { $set: { ...post, update_id: update.update_id } },
           { upsert: true }
