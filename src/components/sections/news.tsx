@@ -361,6 +361,54 @@ export function News() {
             </div>
           </div>
         )}
+        {post.sticker_url && (
+          <div className="mb-3">
+            <div className="relative group mb-2 last:mb-0">
+              <div
+                className="relative w-32 h-32 sm:w-40 sm:h-40 bg-gray-200 dark:bg-gray-700 rounded-xl overflow-hidden flex items-center justify-center cursor-pointer"
+                onClick={() =>
+                  openImageModal(
+                    post.sticker_url || "/placeholder.svg",
+                    `Стикер из поста #${post.message_id}`
+                  )
+                }
+              >
+                <Image
+                  src={post.sticker_url || "/placeholder.svg"}
+                  alt={`Стикер из поста #${post.message_id}`}
+                  fill
+                  className="object-contain"
+                  sizes="128px"
+                  loading="lazy"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src =
+                      "/placeholder.svg?height=128&width=128&text=Стикер+недоступен";
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-active:opacity-100 sm:group-hover:opacity-100 transition-opacity">
+                  <div className="absolute bottom-3 right-3">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openImageModal(
+                          post.sticker_url || "/placeholder.svg",
+                          `Стикер из поста #${post.message_id}`
+                        );
+                      }}
+                      className="bg-white/90 hover:bg-white text-black text-xs px-2 py-1"
+                    >
+                      <ZoomIn className="h-3 w-3 mr-1" />
+                      Увеличить
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         {post.video_url && (
           <div className="mb-3">
             <div className="relative w-full h-48 sm:h-56 bg-gray-200 dark:bg-gray-700 rounded-xl overflow-hidden">

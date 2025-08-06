@@ -48,6 +48,7 @@ export interface TelegramMessage {
   photo_url?: string
   video_url?: string
   document_url?: string
+  sticker_url?: string
 }
 
 export interface TelegramResponse {
