@@ -50,14 +50,16 @@ export async function GET(request: NextRequest) {
   try {
     const client = await getClient();
     const db = client.db();
-    const posts = db.collection("posts");
+    const posts = await db.collection("posts").find({}).toArray();
+    console.log("Posts in DB:", posts.length);
+    
 
     // Получаем последний update_id из базы
     const lastPost = await posts.find().sort({ update_id: -1 }).limit(1).next();
     let offset = lastPost ? lastPost.update_id + 1 : 0;
 
     const updates = await getUpdates(offset);
-
+    console.log("updates:", updates);
     let saved = 0;
     for (const update of updates) {
       if (
