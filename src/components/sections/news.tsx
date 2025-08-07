@@ -1,33 +1,63 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  MessageCircle,
-  ExternalLink,
-  Clock,
-  RefreshCw,
-  AlertCircle,
-  Download,
-  ChevronDown,
-  X,
-  ZoomIn,
-  ZoomOut,
-} from "lucide-react";
+import { MessageCircle, ExternalLink, Clock, RefreshCw, AlertCircle, Download, ChevronDown, X, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from "@/src/components/ui/button";
 import { Alert, AlertDescription } from "@/src/components/ui/alert";
-import { Badge } from "@/src/components/ui/badge";
 import Image from "next/image";
 import { useTelegramPosts } from "@/src/hooks/use-telegram-posts";
 import type { TelegramMessage } from "@/src/types/telegram";
 import { useState, useEffect } from "react";
 
-// Add ImageModal component
-function ImageModal({
-  isOpen,
-  onClose,
-  imageUrl,
-  alt,
-}: {
+// Утилиты
+const formatDate = (timestamp: number) => {
+  const date = new Date(timestamp * 1000);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  const diffInDays = Math.floor(diffInHours / 24);
+
+  if (diffInMinutes < 1) return "Только что";
+  if (diffInMinutes < 60) return `${diffInMinutes} мин назад`;
+  if (diffInHours < 24) return `${diffInHours}ч назад`;
+  if (diffInDays === 1) return "Вчера";
+  if (diffInDays < 7) return `${diffInDays} дн. назад`;
+  return date.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit" });
+};
+
+const formatText = (text: string, isExpanded = false) => {
+  const formattedText = text
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.*?)\*/g, "<em>$1</em>")
+    .replace(/`(.*?)`/g, "<code class='bg-gray-200 dark:bg-gray-700 px-1 rounded text-sm'>$1</code>")
+    .replace(/\n/g, "<br />");
+  
+  if (!isExpanded && text.length > 150) {
+    return text.substring(0, 150) + "..."
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*(.*?)\*/g, "<em>$1</em>")
+      .replace(/`(.*?)`/g, "<code class='bg-gray-200 dark:bg-gray-700 px-1 rounded text-sm'>$1</code>")
+      .replace(/\n/g, "<br />");
+  }
+  return formattedText;
+};
+
+const formatFileSize = (bytes?: number) => {
+  if (!bytes || bytes === 0) return "";
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i];
+};
+
+const formatDuration = (seconds: number) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+};
+
+// Компонент модального окна
+function ImageModal({ isOpen, onClose, imageUrl, alt }: {
   isOpen: boolean;
   onClose: () => void;
   imageUrl: string;
@@ -35,7 +65,6 @@ function ImageModal({
 }) {
   const [zoom, setZoom] = useState(1);
 
-  // Close modal on escape key
   useEffect(() => {
     const handleEsc = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
@@ -43,25 +72,14 @@ function ImageModal({
 
     if (isOpen) {
       document.addEventListener("keydown", handleEsc);
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
       document.removeEventListener("keydown", handleEsc);
+      document.body.style.overflow = "";
     };
   }, [isOpen, onClose]);
-
-  // Prevent scrolling when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -70,46 +88,28 @@ function ImageModal({
   const resetZoom = () => setZoom(1);
 
   return (
-    <div
-      className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <div
-        className="relative max-w-full max-h-full overflow-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="relative max-w-full max-h-full overflow-auto" onClick={(e) => e.stopPropagation()}>
         <div className="absolute top-2 right-2 flex gap-2 z-10">
-          <Button
-            variant="secondary"
-            size="sm"
-            className="bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 p-0"
-            onClick={zoomOut}
-          >
-            <ZoomOut className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            className="bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 p-0"
-            onClick={zoomIn}
-          >
-            <ZoomIn className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            className="bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 p-0"
-            onClick={onClose}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          {[
+            { icon: ZoomOut, onClick: zoomOut },
+            { icon: ZoomIn, onClick: zoomIn },
+            { icon: X, onClick: onClose }
+          ].map(({ icon: Icon, onClick }, index) => (
+            <Button
+              key={index}
+              variant="secondary"
+              size="sm"
+              className="bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 p-0"
+              onClick={onClick}
+            >
+              <Icon className="h-4 w-4" />
+            </Button>
+          ))}
         </div>
         <div
           className="relative"
-          style={{
-            transform: `scale(${zoom})`,
-            transition: "transform 0.2s ease",
-          }}
+          style={{ transform: `scale(${zoom})`, transition: "transform 0.2s ease" }}
           onDoubleClick={resetZoom}
         >
           <img
@@ -119,8 +119,7 @@ function ImageModal({
             style={{ margin: "auto" }}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src =
-                "/placeholder.svg?height=400&width=600&text=Изображение+недоступно";
+              target.src = "/placeholder.svg?height=400&width=600&text=Изображение+недоступно";
             }}
           />
         </div>
@@ -132,8 +131,235 @@ function ImageModal({
   );
 }
 
+// Компонент медиа контента
+function MediaContent({ post, onImageClick }: { post: TelegramMessage; onImageClick: (url: string, alt: string) => void }) {
+  const handleClick = (url: string, alt: string) => {
+    onImageClick(url, alt);
+  };
+
+  const handleTouch = (url: string, alt: string) => {
+    onImageClick(url, alt);
+  };
+
+  if (post.photo_url) {
+    return (
+      <div className="mb-4">
+        <div className="relative group">
+          <div
+            className="relative w-full aspect-[4/3] bg-gray-200 dark:bg-gray-700 rounded-xl overflow-hidden cursor-pointer"
+            onClick={() => handleClick(post.photo_url || "/placeholder.svg", `Фото от ${formatDate(post.date)}`)}
+            onTouchStart={() => handleTouch(post.photo_url || "/placeholder.svg", `Фото от ${formatDate(post.date)}`)}
+          >
+            <Image
+              src={post.photo_url || "/placeholder.svg"}
+              alt={`Фото от ${formatDate(post.date)}`}
+              fill
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 60vw"
+              loading="lazy"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "/placeholder.svg?height=300&width=400&text=Изображение+недоступно";
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="absolute bottom-3 right-3">
+                <div className="bg-white/90 hover:bg-white text-black text-xs px-2 py-1 rounded-lg flex items-center gap-1 transition-colors">
+                  <ZoomIn className="h-3 w-3" />
+                  Увеличить
+                </div>
+              </div>
+            </div>
+          </div>
+          {post.photo && post.photo.length > 0 && (() => {
+            const lastPhoto = post.photo[post.photo.length - 1];
+            return (
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 px-1 flex items-center gap-2">
+                <span className="flex items-center gap-1">📷 {lastPhoto.width}×{lastPhoto.height}</span>
+                {typeof lastPhoto.file_size === "number" && lastPhoto.file_size > 0 && (
+                  <span>{formatFileSize(lastPhoto.file_size)}</span>
+                )}
+              </div>
+            );
+          })()}
+        </div>
+      </div>
+    );
+  }
+
+  if (post.sticker_url) {
+    return (
+      <div className="mb-4">
+        <div className="relative group flex justify-center">
+          <div
+            className="relative w-32 h-32 sm:w-40 sm:h-40 bg-gray-200 dark:bg-gray-700 rounded-xl overflow-hidden flex items-center justify-center cursor-pointer"
+            onClick={() => handleClick(post.sticker_url || "/placeholder.svg", `Стикер от ${formatDate(post.date)}`)}
+            onTouchStart={() => handleTouch(post.sticker_url || "/placeholder.svg", `Стикер от ${formatDate(post.date)}`)}
+          >
+            <Image
+              src={post.sticker_url || "/placeholder.svg"}
+              alt={`Стикер от ${formatDate(post.date)}`}
+              fill
+              className="object-contain transition-transform duration-300 group-hover:scale-110"
+              sizes="160px"
+              loading="lazy"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "/placeholder.svg?height=128&width=128&text=Стикер+недоступен";
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="absolute bottom-2 right-2">
+                <div className="bg-white/90 hover:bg-white text-black text-xs px-2 py-1 rounded-lg flex items-center gap-1">
+                  <ZoomIn className="h-3 w-3" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (post.video_url) {
+    return (
+      <div className="mb-4">
+        <div className="relative w-full aspect-video bg-gray-200 dark:bg-gray-700 rounded-xl overflow-hidden">
+          <video
+            className="w-full h-full object-cover"
+            controls
+            preload="metadata"
+            playsInline
+            poster="/placeholder.svg?height=300&width=400&text=Видео"
+          >
+            <source src={post.video_url} type="video/mp4" />
+            Ваш браузер не поддерживает воспроизведение видео.
+          </video>
+          <div className="absolute top-3 right-3 bg-black/70 text-white text-xs px-2 py-1 rounded-lg flex items-center gap-1">
+            🎥 {post.video && formatDuration(post.video.duration)}
+          </div>
+        </div>
+        {post.video && (
+          <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 px-1 flex items-center gap-2">
+            <span className="flex items-center gap-1">🎥 {post.video.width}×{post.video.height}</span>
+            <span>{formatDuration(post.video.duration)}</span>
+            {post.video.file_size && post.video.file_size > 0 && (
+              <span>{formatFileSize(post.video.file_size)}</span>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (post.document_url) {
+    return (
+      <div className="mb-4">
+        <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3 min-w-0 flex-1">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg flex-shrink-0">
+                <Download className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  {post.document?.file_name || "Документ"}
+                </p>
+                <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 mt-1">
+                  <span>{post.document?.mime_type}</span>
+                  {post.document?.file_size && post.document.file_size > 0 && (
+                    <span>{formatFileSize(post.document.file_size)}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open(post.document_url, "_blank")}
+              className="ml-3 flex-shrink-0"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+// Компонент поста
+function PostItem({ post, isExpanded, onToggleExpansion, onImageClick }: {
+  post: TelegramMessage;
+  isExpanded: boolean;
+  onToggleExpansion: () => void;
+  onImageClick: (url: string, alt: string) => void;
+}) {
+  const postText = post.text || post.caption;
+  const hasLongText = post.text && post.text.length > 150;
+
+  return (
+    <motion.div
+      key={post.message_id}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 mb-4"
+    >
+      {/* Дата поста */}
+      <div className="flex justify-end items-center mb-3">
+        <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded-full">
+          {formatDate(post.date)}
+        </span>
+      </div>
+
+      {/* Медиа контент */}
+      <MediaContent post={post} onImageClick={onImageClick} />
+
+      {/* Текст поста */}
+      {postText && (
+        <div className="mb-3">
+          <div
+            className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: formatText(postText, isExpanded) }}
+          />
+          {hasLongText && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onToggleExpansion}
+              className="mt-2 h-auto p-0 text-blue-600 dark:text-blue-400 text-xs hover:text-blue-700 dark:hover:text-blue-300"
+            >
+              {isExpanded ? "Свернуть" : "Показать полностью"}
+              <ChevronDown className={`h-3 w-3 ml-1 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Статистика поста */}
+      {(post.views || post.forwards) && (
+        <div className="flex gap-4 text-xs text-gray-500 dark:text-gray-400 pt-3 border-t border-gray-100 dark:border-gray-700">
+          {post.views && (
+            <span className="flex items-center gap-1 bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded-full">
+              👁 {post.views.toLocaleString()}
+            </span>
+          )}
+          {post.forwards && (
+            <span className="flex items-center gap-1 bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded-full">
+              ↗️ {post.forwards.toLocaleString()}
+            </span>
+          )}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+// Основной компонент
 export function News() {
-  // Автообновление каждые 15 секунд
   const {
     posts,
     loading,
@@ -149,16 +375,9 @@ export function News() {
   });
 
   const [expandedPosts, setExpandedPosts] = useState<Set<number>>(new Set());
+  const [modalImage, setModalImage] = useState<{ url: string; alt: string; } | null>(null);
 
-  // Add state for modal
-  const [modalImage, setModalImage] = useState<{
-    url: string;
-    alt: string;
-  } | null>(null);
-
-  const openTelegramChannel = () => {
-    window.open("https://t.me/nrxtest", "_blank");
-  };
+  const openTelegramChannel = () => window.open("https://t.me/nrxtest", "_blank");
 
   const togglePostExpansion = (postId: number) => {
     const newExpanded = new Set(expandedPosts);
@@ -170,325 +389,8 @@ export function News() {
     setExpandedPosts(newExpanded);
   };
 
-  const sharePost = async (post: TelegramMessage) => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Пост #${post.message_id}`,
-          text: post.text?.substring(0, 100) + "...",
-          url: `https://t.me/nrxtest/${post.message_id}`,
-        });
-      } catch (err) {
-        console.log("Ошибка при попытке поделиться:", err);
-      }
-    } else {
-      navigator.clipboard.writeText(`https://t.me/nrxtest/${post.message_id}`);
-    }
-  };
-
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp * 1000);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    const diffInMinutes = Math.floor(diffInSeconds / 60);
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    const diffInDays = Math.floor(diffInHours / 24);
-
-    if (diffInMinutes < 1) return "Только что";
-    if (diffInMinutes < 60) return `${diffInMinutes} мин назад`;
-    if (diffInHours < 24) return `${diffInHours}ч назад`;
-    if (diffInDays === 1) return "Вчера";
-    if (diffInDays < 7) return `${diffInDays} дн. назад`;
-    return date.toLocaleDateString("ru-RU", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-    });
-  };
-
-  const formatText = (text: string, isExpanded = false) => {
-    const formattedText = text
-      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-      .replace(/\*(.*?)\*/g, "<em>$1</em>")
-      .replace(
-        /`(.*?)`/g,
-        "<code class='bg-gray-200 dark:bg-gray-700 px-1 rounded text-sm'>$1</code>"
-      )
-      .replace(/\n/g, "<br />");
-    if (!isExpanded && text.length > 150) {
-      const truncated = text.substring(0, 150) + "...";
-      return truncated
-        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-        .replace(/\*(.*?)\*/g, "<em>$1</em>")
-        .replace(
-          /`(.*?)`/g,
-          "<code class='bg-gray-200 dark:bg-gray-700 px-1 rounded text-sm'>$1</code>"
-        )
-        .replace(/\n/g, "<br />");
-    }
-    return formattedText;
-  };
-
-  const formatFileSize = (bytes?: number) => {
-    if (!bytes || bytes === 0) return "";
-    const sizes = ["B", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i];
-  };
-
-  const formatDuration = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-  };
-
-  // Add function to open image in modal
-  const openImageModal = (url: string, alt: string) => {
-    setModalImage({ url, alt });
-  };
-
-  // Add function to close modal
-  const closeImageModal = () => {
-    setModalImage(null);
-  };
-
-  const renderPost = (post: TelegramMessage) => {
-    const postText = post.text || post.caption;
-    const isExpanded = expandedPosts.has(post.message_id);
-    const hasLongText = post.text && post.text.length > 150;
-
-    return (
-      <motion.div
-        key={post.message_id}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 mb-4"
-      >
-        <div className="flex justify-between items-center mb-3">
-          <Badge variant="secondary" className="text-xs px-2 py-1">
-            #{post.message_id}
-          </Badge>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              {formatDate(post.date)}
-            </span>
-          </div>
-        </div>
-        {postText && (
-          <div className="mb-3">
-            <div
-              className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed"
-              dangerouslySetInnerHTML={{
-                __html: formatText(postText, isExpanded),
-              }}
-            />
-            {hasLongText && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => togglePostExpansion(post.message_id)}
-                className="mt-2 h-auto p-0 text-blue-600 dark:text-blue-400 text-xs"
-              >
-                {isExpanded ? "Свернуть" : "Показать полностью"}
-                <ChevronDown
-                  className={`h-3 w-3 ml-1 transition-transform ${
-                    isExpanded ? "rotate-180" : ""
-                  }`}
-                />
-              </Button>
-            )}
-          </div>
-        )}
-        {post.photo_url && (
-          <div className="mb-3">
-            <div className="relative group mb-2 last:mb-0">
-              <div
-                className="relative w-full h-48 sm:h-56 bg-gray-200 dark:bg-gray-700 rounded-xl overflow-hidden cursor-pointer"
-                onClick={() =>
-                  openImageModal(
-                    post.photo_url || "/placeholder.svg",
-                    `Фото из поста #${post.message_id}`
-                  )
-                }
-              >
-                <Image
-                  src={post.photo_url || "/placeholder.svg"}
-                  alt={`Фото из поста #${post.message_id}`}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 60vw"
-                  loading="lazy"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src =
-                      "/placeholder.svg?height=200&width=300&text=Изображение+недоступно";
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-active:opacity-100 sm:group-hover:opacity-100 transition-opacity">
-                  <div className="absolute bottom-3 right-3">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openImageModal(
-                          post.photo_url || "/placeholder.svg",
-                          `Фото из поста #${post.message_id}`
-                        );
-                      }}
-                      className="bg-white/90 hover:bg-white text-black text-xs px-2 py-1"
-                    >
-                      <ZoomIn className="h-3 w-3 mr-1" />
-                      Увеличить
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              {post.photo &&
-                post.photo.length > 0 &&
-                (() => {
-                  const lastPhoto = post.photo[post.photo.length - 1];
-                  return (
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 px-1">
-                      📷 {lastPhoto.width}×{lastPhoto.height}
-                      {typeof lastPhoto.file_size === "number" &&
-                        lastPhoto.file_size > 0 &&
-                        ` • ${formatFileSize(lastPhoto.file_size)}`}
-                    </div>
-                  );
-                })()}
-            </div>
-          </div>
-        )}
-        {post.sticker_url && (
-          <div className="mb-3">
-            <div className="relative group mb-2 last:mb-0">
-              <div
-                className="relative w-32 h-32 sm:w-40 sm:h-40 bg-gray-200 dark:bg-gray-700 rounded-xl overflow-hidden flex items-center justify-center cursor-pointer"
-                onClick={() =>
-                  openImageModal(
-                    post.sticker_url || "/placeholder.svg",
-                    `Стикер из поста #${post.message_id}`
-                  )
-                }
-              >
-                <Image
-                  src={post.sticker_url || "/placeholder.svg"}
-                  alt={`Стикер из поста #${post.message_id}`}
-                  fill
-                  className="object-contain"
-                  sizes="128px"
-                  loading="lazy"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src =
-                      "/placeholder.svg?height=128&width=128&text=Стикер+недоступен";
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-active:opacity-100 sm:group-hover:opacity-100 transition-opacity">
-                  <div className="absolute bottom-3 right-3">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openImageModal(
-                          post.sticker_url || "/placeholder.svg",
-                          `Стикер из поста #${post.message_id}`
-                        );
-                      }}
-                      className="bg-white/90 hover:bg-white text-black text-xs px-2 py-1"
-                    >
-                      <ZoomIn className="h-3 w-3 mr-1" />
-                      Увеличить
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-        {post.video_url && (
-          <div className="mb-3">
-            <div className="relative w-full h-48 sm:h-56 bg-gray-200 dark:bg-gray-700 rounded-xl overflow-hidden">
-              <video
-                className="w-full h-full object-cover"
-                controls
-                preload="metadata"
-                playsInline
-                poster="/placeholder.svg?height=200&width=300&text=Видео"
-              >
-                <source src={post.video_url} type="video/mp4" />
-                Ваш браузер не поддерживает воспроизведение видео.
-              </video>
-              <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
-                🎥 {post.video && formatDuration(post.video.duration)}
-              </div>
-            </div>
-            {post.video && (
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 px-1">
-                🎥 {post.video.width}×{post.video.height} •{" "}
-                {formatDuration(post.video.duration)}
-                {post.video.file_size &&
-                  post.video.file_size > 0 &&
-                  ` • ${formatFileSize(post.video.file_size)}`}
-              </div>
-            )}
-          </div>
-        )}
-        {post.document_url && (
-          <div className="mb-3">
-            <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2 min-w-0 flex-1">
-                  <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg flex-shrink-0">
-                    <Download className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                      {post.document?.file_name || "Документ"}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {post.document?.mime_type}
-                      {post.document?.file_size &&
-                        post.document.file_size > 0 &&
-                        ` • ${formatFileSize(post.document.file_size)}`}
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => window.open(post.document_url, "_blank")}
-                  className="ml-2 flex-shrink-0"
-                >
-                  <Download className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-        {(post.views || post.forwards) && (
-          <div className="flex gap-4 text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-100 dark:border-gray-700">
-            {post.views && (
-              <span className="flex items-center gap-1">
-                👁 {post.views.toLocaleString()}
-              </span>
-            )}
-            {post.forwards && (
-              <span className="flex items-center gap-1">
-                ↗️ {post.forwards.toLocaleString()}
-              </span>
-            )}
-          </div>
-        )}
-      </motion.div>
-    );
-  };
-
-  // Показываем только первые 5 постов, если не нажата кнопка "Показать все"
-  const displayedPosts = posts;
+  const openImageModal = (url: string, alt: string) => setModalImage({ url, alt });
+  const closeImageModal = () => setModalImage(null);
 
   return (
     <>
@@ -508,6 +410,7 @@ export function News() {
               Следите за последними новостями в нашем Telegram канале
             </p>
           </motion.div>
+          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -515,14 +418,13 @@ export function News() {
             viewport={{ once: true }}
             className="max-w-2xl mx-auto"
           >
+            {/* Заголовок виджета */}
             <div className="bg-white dark:bg-gray-900 rounded-t-2xl p-4 sm:p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 border-b-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                   <Clock className="h-4 w-4 mr-2" />
                   <span className="hidden sm:inline">Обновлено: </span>
-                  {lastUpdate
-                    ? lastUpdate.toLocaleTimeString("ru-RU")
-                    : "Загрузка..."}
+                  {lastUpdate ? lastUpdate.toLocaleTimeString("ru-RU") : "Загрузка..."}
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
@@ -532,11 +434,7 @@ export function News() {
                     disabled={isRefreshing}
                     className="flex items-center gap-1 bg-transparent h-8 px-2 sm:px-3"
                   >
-                    <RefreshCw
-                      className={`h-3 w-3 ${
-                        isRefreshing ? "animate-spin" : ""
-                      }`}
-                    />
+                    <RefreshCw className={`h-3 w-3 ${isRefreshing ? "animate-spin" : ""}`} />
                     <span className="hidden sm:inline">Обновить</span>
                   </Button>
                   <Button
@@ -550,6 +448,8 @@ export function News() {
                 </div>
               </div>
             </div>
+
+            {/* Контент виджета */}
             <div className="bg-white dark:bg-gray-900 rounded-b-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 border-t-0">
               {error && (
                 <div className="p-4 border-b border-gray-200 dark:border-gray-700">
@@ -562,55 +462,54 @@ export function News() {
                   </Alert>
                 </div>
               )}
-              <div className="p-4 min-h-[400px] max-h-[70vh] overflow-y-auto custom-scrollbar">
-                {loading && posts.length === 0 ? (
-                  <div className="flex items-center justify-center h-64">
-                    <div className="text-center">
-                      <motion.div
-                        className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"
-                        animate={{ rotate: 360 }}
-                        transition={{
-                          duration: 1,
-                          repeat: Number.POSITIVE_INFINITY,
-                          ease: "linear",
-                        }}
-                      />
-                      <p className="text-gray-600 dark:text-gray-400">
-                        Загрузка постов...
-                      </p>
+              
+              <div className="rounded-b-2xl overflow-hidden">
+                <div className="p-4 min-h-[400px] max-h-[70vh] overflow-y-auto custom-scrollbar">
+                  {loading && posts.length === 0 ? (
+                    <div className="flex items-center justify-center h-64">
+                      <div className="text-center">
+                        <motion.div
+                          className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                        />
+                        <p className="text-gray-600 dark:text-gray-400">Загрузка постов...</p>
+                      </div>
                     </div>
-                  </div>
-                ) : displayedPosts.length > 0 ? (
-                  <>
-                    <div>{displayedPosts.map(renderPost)}</div>
-                  </>
-                ) : (
-                  <div className="flex items-center justify-center h-64">
-                    <div className="text-center">
-                      <MessageCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600 dark:text-gray-400 mb-2">
-                        Нет доступных постов
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-500 mb-4 px-4">
-                        Убедитесь, что бот добавлен в канал как администратор
-                      </p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={refreshPosts}
-                      >
-                        Попробовать снова
-                      </Button>
+                  ) : posts.length > 0 ? (
+                    <div>
+                      {posts.map(post => (
+                        <PostItem
+                          key={post.message_id}
+                          post={post}
+                          isExpanded={expandedPosts.has(post.message_id)}
+                          onToggleExpansion={() => togglePostExpansion(post.message_id)}
+                          onImageClick={openImageModal}
+                        />
+                      ))}
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="flex items-center justify-center h-64">
+                      <div className="text-center">
+                        <MessageCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600 dark:text-gray-400 mb-2">Нет доступных постов</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-500 mb-4 px-4">
+                          Убедитесь, что бот добавлен в канал как администратор
+                        </p>
+                        <Button variant="outline" size="sm" onClick={refreshPosts}>
+                          Попробовать снова
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Add image modal */}
+      {/* Модальное окно */}
       {modalImage && (
         <ImageModal
           isOpen={!!modalImage}

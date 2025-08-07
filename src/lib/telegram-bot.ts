@@ -45,8 +45,8 @@ export class TelegramBot {
       const bestPhoto = message.photo[message.photo.length - 1]
       try {
         const photoUrl = await this.getFile(bestPhoto.file_id)
-        processedMessage.photo_urls = [photoUrl]
-      } catch { processedMessage.photo_urls = [] }
+        processedMessage.photo_url = photoUrl
+      } catch { processedMessage.photo_url }
     }
     if (message.video) {
       try {
