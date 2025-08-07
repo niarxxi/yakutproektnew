@@ -2,7 +2,7 @@ name: Fetch Telegram Posts
 
 on:
   schedule:
-    - cron: '*/5 * * * *' # Каждые 5 минут
+    - cron: '*/1 * * * *' # Каждые 5 минут
   workflow_dispatch:
 
 jobs:
