@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react"
-import { motion, useScroll, useTransform } from "framer-motion"
-import { ArrowRight, Play, ChevronDown, Compass, Building, Ruler } from "lucide-react"
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
+import { ArrowRight, Play, Compass, Building, Ruler } from 'lucide-react'
 import { Button } from "@/src/components/ui/button"
 import { ContactModal } from "@/src/components/modals/contact-modal"
 import { useIsMobile } from "@/src/hooks/use-mobile"
@@ -40,244 +40,219 @@ const StatItem = ({
   </motion.div>
 )
 
-// Мемоизированный компонент для карточек проектов
+// Карточка проекта без закруглений и индикаторов
 const ProjectCard = ({
   card,
   index,
   activeIndex,
-  hoveredCard,
-  onHover,
-  onLeave,
   onClick,
 }: {
   card: any
   index: number
   activeIndex: number
-  hoveredCard: number | null
-  onHover: () => void
-  onLeave: () => void
   onClick: () => void
-}) => (
-  <motion.div
-    className={`absolute inset-0 rounded-2xl rounded-tl-none rounded-bl-none overflow-hidden shadow-2xl cursor-pointer ${
-      activeIndex === index ? "z-20" : "z-10"
-    }`}
-    initial={false}
-    animate={{
-      opacity: activeIndex === index ? 1 : 0,
-      scale: activeIndex === index ? 1 : 0.8,
-      rotateX: activeIndex === index ? 0 : -15,
-      filter: activeIndex === index ? "blur(0px)" : "blur(4px)",
-    }}
-    transition={{
-      duration: 0.8,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    }}
-    onMouseEnter={onHover}
-    onMouseLeave={onLeave}
-    onClick={onClick}
-    style={{
-      willChange: "transform, opacity, filter",
-      transformStyle: "preserve-3d",
-    }}
-  >
-    {/* Фоновое изображение с параллакс эффектом */}
+}) => {
+  // Определяем иконку внутри компонента
+  const getIcon = (iconType: string) => {
+    switch (iconType) {
+      case 'building':
+        return <Building className="h-6 w-6" />
+      case 'compass':
+        return <Compass className="h-6 w-6" />
+      case 'ruler':
+        return <Ruler className="h-6 w-6" />
+      default:
+        return <Building className="h-6 w-6" />
+    }
+  }
+
+  const isActive = activeIndex === index
+
+  return (
     <motion.div
-      className="absolute inset-0 bg-cover bg-center"
-      style={{ backgroundImage: `url(${card.bgImage})` }}
-      animate={{
-        scale: hoveredCard === index ? 1.1 : 1,
+      key={`card-${index}`}
+      initial={{ 
+        opacity: 0, 
+        scale: 0.8,
+        rotateY: -15,
+        z: -100
       }}
-      transition={{ duration: 0.6 }}
-    />
-
-    {/* Динамическое наложение */}
-    <motion.div
-      className="absolute inset-0"
-      animate={{
-        background:
-          hoveredCard === index
-            ? "linear-gradient(135deg, rgba(13,43,82,0.3) 0%, rgba(27,54,68,0.7) 50%, rgba(13,43,82,0.9) 100%)"
-            : "linear-gradient(to bottom, transparent 0%, rgba(13,43,82,0.7) 70%, rgba(13,43,82,0.9) 100%)",
+      animate={{ 
+        opacity: isActive ? 1 : 0,
+        scale: isActive ? 1 : 0.9,
+        rotateY: isActive ? 0 : 15,
+        z: isActive ? 0 : -50,
+        zIndex: isActive ? 20 : 10
       }}
-      transition={{ duration: 0.4 }}
-    />
-
-    {/* Контент карточки */}
-    <div className="relative h-full flex flex-col p-8 text-white">
-      {/* Верхняя часть с иконкой */}
-      <div className="mb-auto">
-        <motion.div
-          className={`p-4 rounded-xl bg-gradient-to-br ${card.color} w-16 h-16 flex items-center justify-center mb-6`}
-          animate={{
-            rotate: hoveredCard === index ? [0, -5, 5, 0] : 0,
-            scale: hoveredCard === index ? 1.1 : 1,
-            boxShadow: hoveredCard === index ? "0 20px 40px rgba(0,0,0,0.3)" : "0 10px 20px rgba(0,0,0,0.2)",
-          }}
-          transition={{
-            rotate: { duration: 0.6, ease: "easeInOut" },
-            scale: { duration: 0.3 },
-            boxShadow: { duration: 0.3 },
-          }}
-        >
-          {card.icon}
-        </motion.div>
-      </div>
-
-      {/* Нижняя часть с текстом */}
+      exit={{ 
+        opacity: 0, 
+        scale: 0.8,
+        rotateY: 15,
+        z: -100
+      }}
+      transition={{
+        duration: 0.8,
+        ease: [0.25, 0.46, 0.45, 0.94], // easeOutQuart
+        scale: { duration: 0.6 },
+        rotateY: { duration: 0.7 },
+      }}
+      whileHover={{
+        scale: isActive ? 1.02 : 0.9,
+        rotateY: isActive ? -2 : 15,
+        transition: { duration: 0.3 }
+      }}
+      className="absolute inset-0 overflow-hidden shadow-2xl cursor-pointer"
+      style={{
+        borderRadius: 0,
+        transformStyle: "preserve-3d",
+        perspective: 1000,
+      }}
+      onClick={onClick}
+    >
+      {/* Фоновое изображение с анимацией */}
       <motion.div
-        animate={{
-          y: hoveredCard === index ? -10 : 0,
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: `url(${card.bgImage})`, borderRadius: 0 }}
+        initial={{ scale: 1.1 }}
+        animate={{ 
+          scale: isActive ? 1 : 1.1,
         }}
-        transition={{ duration: 0.3 }}
-      >
-        <motion.h3
-          className="text-3xl font-bold mb-4"
-          animate={{
-            scale: hoveredCard === index ? 1.05 : 1,
-            textShadow: hoveredCard === index ? "0 4px 8px rgba(0,0,0,0.3)" : "0 2px 4px rgba(0,0,0,0.1)",
-          }}
-          transition={{ duration: 0.3 }}
-        >
-          {card.title}
-        </motion.h3>
+        transition={{ duration: 0.8, ease: "easeOut" }}
+      />
 
-        <motion.p
-          className="text-white mb-6 text-lg"
-          animate={{
-            opacity: hoveredCard === index ? 1 : 0.9,
-          }}
-          transition={{ duration: 0.3 }}
-        >
-          {card.description}
-        </motion.p>
+      {/* Анимированное наложение */}
+      <motion.div 
+        className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"
+        style={{ borderRadius: 0 }}
+        initial={{ opacity: 0.6 }}
+        animate={{ 
+          opacity: isActive ? 0.8 : 0.6,
+        }}
+        transition={{ duration: 0.6 }}
+      />
 
-        <motion.div
-          className="flex items-center text-[#B9DDFF] font-medium cursor-pointer"
-          animate={{
-            x: hoveredCard === index ? 10 : 0,
-            color: hoveredCard === index ? "#FFFFFF" : "#B9DDFF",
+      {/* Контент карточки с анимацией */}
+      <div className="relative h-full flex flex-col p-6 text-white">
+        {/* Верхняя часть с иконкой */}
+        <motion.div 
+          className="mb-auto"
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ 
+            y: isActive ? 0 : -10, 
+            opacity: isActive ? 1 : 0.7 
           }}
-          transition={{ duration: 0.3 }}
+          transition={{ 
+            duration: 0.6, 
+            delay: isActive ? 0.3 : 0,
+            ease: "easeOut" 
+          }}
         >
-          Подробнее
-          <motion.div
-            animate={{
-              x: hoveredCard === index ? 5 : 0,
-              rotate: hoveredCard === index ? 45 : 0,
+          <motion.div 
+            className={`p-3 bg-gradient-to-br ${card.color} w-12 h-12 flex items-center justify-center mb-4`}
+            style={{ borderRadius: 0 }}
+            whileHover={{ 
+              scale: 1.1, 
+              rotate: 5,
+              transition: { duration: 0.2 }
             }}
-            transition={{ duration: 0.3 }}
+            animate={{
+              rotate: isActive ? [0, 2, -2, 0] : 0,
+            }}
+            transition={{
+              rotate: { 
+                duration: 2, 
+                repeat: isActive ? Infinity : 0, 
+                repeatType: "reverse",
+                ease: "easeInOut"
+              }
+            }}
           >
-            <ArrowRight className="ml-2 h-4 w-4" />
+            {getIcon(card.iconType)}
           </motion.div>
         </motion.div>
-      </motion.div>
 
-      {/* Анимированные частицы */}
-      {hoveredCard === index && (
-        <>
-          {[...Array(6)].map((_, i) => (
+        {/* Нижняя часть с текстом */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ 
+            y: isActive ? 0 : 10, 
+            opacity: isActive ? 1 : 0.8 
+          }}
+          transition={{ 
+            duration: 0.6, 
+            delay: isActive ? 0.4 : 0,
+            ease: "easeOut" 
+          }}
+        >
+          <motion.h3 
+            className="text-2xl font-bold mb-3"
+            animate={{
+              scale: isActive ? 1 : 0.95,
+            }}
+            transition={{ duration: 0.4 }}
+          >
+            {card.title}
+          </motion.h3>
+          <motion.p 
+            className="text-white/90 mb-4 text-base"
+            animate={{
+              opacity: isActive ? 1 : 0.8,
+            }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+          >
+            {card.description}
+          </motion.p>
+          <motion.div 
+            className="flex items-center text-[#B9DDFF] font-medium"
+            whileHover={{ x: 5 }}
+            animate={{
+              x: isActive ? [0, 3, 0] : 0,
+            }}
+            transition={{
+              x: { 
+                duration: 1.5, 
+                repeat: isActive ? Infinity : 0, 
+                repeatType: "reverse",
+                ease: "easeInOut"
+              }
+            }}
+          >
+            Подробнее
             <motion.div
-              key={i}
-              className="absolute w-1 h-1 rounded-full bg-[#B9DDFF]"
-              style={{
-                left: `${20 + i * 15}%`,
-                top: `${30 + (i % 2) * 20}%`,
-              }}
-              initial={{ opacity: 0, scale: 0 }}
               animate={{
-                opacity: [0, 1, 0],
-                scale: [0, 1.5, 0],
-                y: [0, -20, -40],
+                x: isActive ? [0, 3, 0] : 0,
               }}
               transition={{
-                duration: 2,
-                repeat: Number.POSITIVE_INFINITY,
-                delay: i * 0.2,
-                ease: "easeOut",
+                duration: 1.5, 
+                repeat: isActive ? Infinity : 0, 
+                repeatType: "reverse",
+                ease: "easeInOut"
               }}
-            />
-          ))}
-        </>
-      )}
-    </div>
-
-    {/* Граница при наведении */}
-    <motion.div
-      className="absolute inset-0 rounded-2xl rounded-tl-none rounded-bl-none border-2 border-[#B9DDFF]"
-      initial={{ opacity: 0 }}
-      animate={{
-        opacity: hoveredCard === index ? 0.6 : 0,
-      }}
-      transition={{ duration: 0.3 }}
-    />
-  </motion.div>
-)
+            >
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </motion.div>
+          </motion.div>
+        </motion.div>
+      </div>
+    </motion.div>
+  )
+}
 
 export function Hero() {
   const [isContactOpen, setIsContactOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
-  const [hoveredCard, setHoveredCard] = useState<number | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const { scrollY } = useScroll()
   const isMobile = useIsMobile()
 
-  // Параллакс эффекты с оптимизацией
-  const opacity = useTransform(scrollY, [0, 300], [1, 0])
-  const scale = useTransform(scrollY, [0, 300], [1, 0.9])
-
-  // Автоматическое переключение активного элемента
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % 3)
-    }, 5000)
-    return () => clearInterval(interval)
-  }, [])
-
-  // Мемоизированные функции обработки событий
-  const handleHover = useCallback((index: number) => {
-    setHoveredCard(index)
-  }, [])
-
-  const handleLeave = useCallback(() => {
-    setHoveredCard(null)
-  }, [])
-
-  // Мемоизированные функции навигации
-  const scrollToProjects = useCallback(() => {
-    const element = document.querySelector("#projects")
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
-    }
-  }, [])
-
-  const scrollToNextSection = useCallback(() => {
-    const element = document.querySelector("#about")
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
-    }
-  }, [])
-
-  const scrollToProjectsWithCategory = useCallback((categoryType: string) => {
-    const element = document.querySelector("#projects")
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
-      setTimeout(() => {
-        const event = new CustomEvent("selectProjectCategory", {
-          detail: { category: categoryType },
-        })
-        window.dispatchEvent(event)
-      }, 1000)
-    }
-  }, [])
-
-  // Мемоизированные данные для карточек проектов
+  // Для синхронизации смены карточки с canvas
+  const hasSwitchedRef = useRef(false)
   const projectCards = useMemo(
     () => [
       {
         title: "Жилые комплексы",
         description: "Современные жилые здания с комфортной средой",
-        icon: <Building className="h-8 w-8" />,
+        iconType: "building",
         color: "from-[#0D2B52] to-[#1B3644]",
         bgImage: "/images/projects/LivingBuilding/LB1.webp",
         category: "living",
@@ -285,7 +260,7 @@ export function Hero() {
       {
         title: "Общественные здания",
         description: "Функциональные пространства для общественной жизни",
-        icon: <Compass className="h-8 w-8" />,
+        iconType: "compass",
         color: "from-[#1B3644] to-[#303030]",
         bgImage: "/images/projects/PublicBuildings/PB1.webp",
         category: "public",
@@ -293,7 +268,7 @@ export function Hero() {
       {
         title: "Генеральные планы",
         description: "Комплексное развитие территорий и инфраструктуры",
-        icon: <Ruler className="h-8 w-8" />,
+        iconType: "ruler",
         color: "from-[#303030] to-[#0D2B52]",
         bgImage: "/images/projects/GeneralPlans/GP1.webp",
         category: "plans",
@@ -313,6 +288,31 @@ export function Hero() {
     [],
   )
 
+  // Параллакс эффекты
+  const opacity = useTransform(scrollY, [0, 300], [1, 0])
+  const scale = useTransform(scrollY, [0, 300], [1, 0.9])
+
+  const scrollToProjects = useCallback(() => {
+    const element = document.querySelector("#projects")
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" })
+    }
+  }, [])
+
+  const scrollToProjectsWithCategory = useCallback((categoryType: string) => {
+    const element = document.querySelector("#projects")
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" })
+      setTimeout(() => {
+        const event = new CustomEvent("selectProjectCategory", {
+          detail: { category: categoryType },
+        })
+        window.dispatchEvent(event)
+      }, 1000)
+    }
+  }, [])
+
+  // CANVAS анимация и синхронизация смены карточки
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationFrameRef = useRef<number | null>(null)
 
@@ -333,7 +333,6 @@ export function Hero() {
     resizeCanvas()
     window.addEventListener("resize", resizeCanvas)
 
-    // Animation variables
     let startTime = Date.now()
     const animationDuration = 3000 // 3 seconds
 
@@ -344,6 +343,7 @@ export function Hero() {
       // Reset animation if completed
       if (elapsed > animationDuration + 2000) {
         startTime = currentTime
+        hasSwitchedRef.current = false // сбрасываем флаг на новый цикл
       }
 
       ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -387,11 +387,11 @@ export function Hero() {
         ctx.stroke()
       }
 
-      // Vertical line (снизу вверх) - от "Узнать больше" до header
+      // Vertical line (сверху вниз) - на всю высоту компонента
       const verticalProgress = Math.min((elapsed - 500) / 1500, 1)
       if (verticalProgress > 0) {
-        const startY = canvas.height * 0.93 // Начать снизу от "Узнать больше"
-        const endY = canvas.height * 0.1 // До header
+        const startY = canvas.height // С самого верха
+        const endY = canvas.height * 0.05 // До самого низа
         const currentY = startY + (endY - startY) * verticalProgress
 
         ctx.beginPath()
@@ -417,6 +417,17 @@ export function Hero() {
         ctx.stroke()
       }
 
+      // === СИНХРОНИЗАЦИЯ ===
+      // Когда горизонтальная и вертикальная линии доходят до конца (progress >= 1)
+      if (
+        horizontalProgress >= 1 &&
+        verticalProgress >= 1 &&
+        !hasSwitchedRef.current
+      ) {
+        setActiveIndex((prev) => (prev + 1) % projectCards.length)
+        hasSwitchedRef.current = true
+      }
+
       // Сбросить globalAlpha
       ctx.globalAlpha = 1
 
@@ -431,7 +442,8 @@ export function Hero() {
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [scrollY])
+    // eslint-disable-next-line
+  }, [scrollY, projectCards.length])
 
   return (
     <section
@@ -440,12 +452,19 @@ export function Hero() {
       className="relative min-h-screen flex flex-col justify-center overflow-hidden md:pt-0 pt-20"
     >
       {/* Декоративные линии на Canvas - скрыты на экранах меньше 1024px */}
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none z-0 hidden lg:block" />
+      <motion.canvas 
+        ref={canvasRef} 
+        style={{ opacity, scale }}
+        className="absolute inset-0 w-full h-full pointer-events-none z-0 hidden lg:block" 
+      />
 
       {/* Основной контент */}
       <div className="container mx-auto px-4 relative z-10 flex flex-col h-full justify-center">
-        <motion.div style={{ opacity, scale }} className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Левая колонка - текст */}
+        {/* Левая часть с текстом */}
+        <motion.div 
+          style={{ opacity, scale }} 
+          className="max-w-2xl"
+        >
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -494,11 +513,12 @@ export function Hero() {
               className="flex flex-wrap gap-4 mb-8"
             >
               <motion.div whileHover={{ scale: 1.05, y: -5 }} whileTap={{ scale: 0.95 }} className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-[#0D2B52] to-[#1B3644] dark:from-[#B9DDFF] dark:to-white rounded-lg blur opacity-60 group-hover:opacity-100 transition duration-200" />
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-[#0D2B52] to-[#1B3644] dark:from-[#B9DDFF] dark:to-white blur opacity-60 group-hover:opacity-100 transition duration-200" style={{ borderRadius: 0 }} />
                 <Button
                   size="lg"
                   onClick={() => setIsContactOpen(true)}
                   className="relative bg-white dark:bg-[#0D2B52] text-black dark:text-white hover:text-white dark:hover:text-white hover:bg-[#0D2B52] dark:hover:bg-[#B9DDFF] dark:hover:text-black border-0 px-8 py-6 text-lg font-medium"
+                  style={{ borderRadius: 0 }}
                 >
                   <span className="relative z-10 flex items-center">
                     Оставить заявку
@@ -508,11 +528,12 @@ export function Hero() {
               </motion.div>
 
               <motion.div whileHover={{ scale: 1.05, y: -5 }} whileTap={{ scale: 0.95 }} className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-[#0D2B52] to-[#1B3644] dark:from-[#B9DDFF] dark:to-white rounded-lg blur opacity-60 group-hover:opacity-100 transition duration-200" />
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-[#0D2B52] to-[#1B3644] dark:from-[#B9DDFF] dark:to-white blur opacity-60 group-hover:opacity-100 transition duration-200" style={{ borderRadius: 0 }} />
                 <Button
                   size="lg"
                   onClick={scrollToProjects}
                   className="relative bg-white dark:bg-[#0D2B52] text-black dark:text-white hover:text-white dark:hover:text-white hover:bg-[#0D2B52] dark:hover:bg-[#B9DDFF] dark:hover:text-black border-0 px-8 py-6 text-lg font-medium"
+                  style={{ borderRadius: 0 }}
                 >
                   <span className="relative z-10 flex items-center">
                     <Play className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
@@ -534,72 +555,30 @@ export function Hero() {
               ))}
             </motion.div>
           </motion.div>
-
-          {/* Правая колонка - карточки проектов */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1, delay: 0.3 }}
-            className="relative hidden lg:block"
-          >
-            {/* Фиксированный контейнер под горизонтальной линией и впритык к вертикальной */}
-            <div className="absolute top-[50%] -left-6 h-[375px] w-[500px] xl:w-[830px] xl:h-[405px]">
-              <div className="relative h-full w-full">
-                {projectCards.map((card, index) => (
-                  <ProjectCard
-                    key={index}
-                    card={card}
-                    index={index}
-                    activeIndex={activeIndex}
-                    hoveredCard={hoveredCard}
-                    onHover={() => handleHover(index)}
-                    onLeave={handleLeave}
-                    onClick={() => scrollToProjectsWithCategory(card.category)}
-                  />
-                ))}
-
-                {/* Индикаторы справа от контейнера */}
-                <div className="absolute top-1/2 -translate-y-1/2 -right-16 flex flex-col space-y-4">
-                  {projectCards.map((_, index) => (
-                    <motion.button
-                      key={index}
-                      onClick={() => setActiveIndex(index)}
-                      className={`w-4 h-4 rounded-full transition-all duration-300 ${
-                        activeIndex === index ? "bg-[#0D2B52] dark:bg-[#B9DDFF]" : "bg-black/30 dark:bg-white/30"
-                      }`}
-                      animate={{
-                        scale: activeIndex === index ? 1.25 : 1,
-                      }}
-                      whileHover={{ scale: activeIndex === index ? 1.4 : 1.2 }}
-                      whileTap={{ scale: 0.9 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
-                      aria-label={`Показать проект ${index + 1}`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
         </motion.div>
       </div>
 
-      {/* Скролл вниз */}
+      {/* Контейнер с проектами */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 2, duration: 1 }}
-        className="absolute bottom-1 left-0 right-0 mx-auto w-full flex justify-center items-center"
-        onClick={scrollToNextSection}
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        style={{ opacity, scale }}
+        transition={{ duration: 1, delay: 0.3 }}
+        className="absolute top-1/2 left-1/2 right-0 bottom-0 hidden lg:block z-20"
       >
-        <div className="flex flex-col items-center cursor-pointer">
-          <span className="text-sm text-black/70 dark:text-white/70 mb-2">Узнать больше</span>
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-            className="will-change-transform"
-          >
-            <ChevronDown className="h-6 w-6 text-black/70 dark:text-white/70" />
-          </motion.div>
+        <div className="relative h-full w-full" style={{ borderRadius: 0, perspective: "1000px" }}>
+          {/* Карточки проектов с AnimatePresence */}
+          <AnimatePresence mode="wait">
+            {projectCards.map((card, index) => (
+              <ProjectCard
+                key={`${index}-${activeIndex}`}
+                card={card}
+                index={index}
+                activeIndex={activeIndex}
+                onClick={() => scrollToProjectsWithCategory(card.category)}
+              />
+            ))}
+          </AnimatePresence>
         </div>
       </motion.div>
 
