@@ -7,7 +7,7 @@ import { Button } from "@/src/components/ui/button"
 import { ContactModal } from "@/src/components/modals/contact-modal"
 import { useIsMobile } from "@/src/hooks/use-mobile"
 
-// Мемоизированный компонент для статистики
+// Мемоизированный компонент для статистики с адаптивными размерами
 const StatItem = ({
   stat,
   index,
@@ -25,10 +25,12 @@ const StatItem = ({
       stiffness: 200,
     }}
     whileHover={{ y: -5 }}
-    className="text-center"
+    className="text-center min-w-0 flex-1"
   >
     <div className="relative">
-      <div className="text-3xl md:text-4xl font-bold text-black dark:text-white mb-1">{stat.number}</div>
+      <div className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold text-black dark:text-white mb-1 leading-tight">
+        {stat.number}
+      </div>
       <motion.div
         initial={{ width: 0 }}
         animate={{ width: "40%" }}
@@ -36,7 +38,9 @@ const StatItem = ({
         className="h-0.5 bg-black dark:bg-white mx-auto"
       />
     </div>
-    <div className="text-sm text-black dark:text-white font-medium">{stat.label}</div>
+    <div className="text-xs xs:text-sm text-black dark:text-white font-medium mt-1 leading-tight">
+      {stat.label}
+    </div>
   </motion.div>
 )
 
@@ -459,7 +463,7 @@ export function Hero() {
       />
 
       {/* Основной контент */}
-      <div className="container mx-auto px-4 relative z-10 flex flex-col h-full justify-center">
+      <div className="container mx-auto px-4 relative z-10 flex flex-col h-full justify-center mt-16">
         {/* Левая часть с текстом */}
         <motion.div 
           style={{ opacity, scale }} 
@@ -500,7 +504,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
-              className="text-lg md:text-xl text-black dark:text-white mb-8 max-w-lg mt-12"
+              className="text-lg md:text-xl text-black dark:text-white mb-8 max-w-lg mt-16"
             >
               Ведущий проектный институт с более чем 20-летним опытом. Создаем архитектурные решения, которые формируют
               облик региона.
@@ -543,12 +547,12 @@ export function Hero() {
               </motion.div>
             </motion.div>
 
-            {/* Статистика */}
+            {/* Статистика с адаптивной сеткой и ограниченной шириной */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 1 }}
-              className="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-4"
+              className="flex flex-wrap gap-2 xs:gap-3 sm:gap-4 md:gap-6 mt-4 w-full max-w-lg lg:max-w-md xl:max-w-lg"
             >
               {stats.map((stat, index) => (
                 <StatItem key={index} stat={stat} index={index} />
