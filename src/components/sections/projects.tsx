@@ -308,12 +308,25 @@ export function Projects() {
             transition={{ duration: 0.6 }}
             className="text-center mt-12"
           >
-            <Button size="lg" variant="outline" onClick={handleLoadMore} className="px-8 py-3 bg-transparent">
-              Показать больше проектов
-              <Badge variant="secondary" className="ml-2">
-                +{Math.min(8, filteredProjects.length - visibleCount)}
-              </Badge>
-            </Button>
+            <div className="relative group inline-block">
+              <div
+                className="absolute -inset-0.5 bg-gradient-to-r from-[#0D2B52] to-[#1B3644] dark:from-[#B9DDFF] dark:to-white blur opacity-60 group-hover:opacity-100 transition duration-200"
+                style={{ borderRadius: 0 }}
+              />
+              <Button
+                size="lg"
+                onClick={handleLoadMore}
+                className="relative bg-white dark:bg-[#0D2B52] text-black dark:text-white hover:text-white dark:hover:text-black hover:bg-[#0D2B52] dark:hover:bg-[#B9DDFF] border-0 px-8 py-6 text-lg font-medium transition-colors duration-200"
+                style={{ borderRadius: 0 }}
+              >
+                <span className="relative z-10 flex items-center">
+                  Показать больше проектов
+                  <Badge variant="secondary" className="ml-2">
+                    +{Math.min(8, filteredProjects.length - visibleCount)}
+                  </Badge>
+                </span>
+              </Button>
+            </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
               Показано {visibleCount} из {filteredProjects.length} проектов
             </p>
@@ -328,6 +341,27 @@ export function Projects() {
       </div>
 
       <ProjectModal project={selectedProject} isOpen={!!selectedProject} onClose={() => setSelectedProject(null)} />
+
+      {/* Стили для анимации градиента (если нужно, можно вынести в globals.css) */}
+      <style jsx global>{`
+        @keyframes gradient {
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
+        }
+        .bg-size-200 {
+          background-size: 200% auto;
+        }
+        .animate-gradient {
+          animation: gradient 8s ease infinite;
+        }
+      `}</style>
     </section>
   )
 }
