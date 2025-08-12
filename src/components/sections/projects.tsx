@@ -311,13 +311,13 @@ export function Projects() {
             <div className="relative group inline-block">
               <div
                 className="absolute -inset-0.5 bg-gradient-to-r from-[#0D2B52] to-[#1B3644] dark:from-[#B9DDFF] dark:to-white blur opacity-60 group-hover:opacity-100 transition duration-200"
-                style={{ borderRadius: 0 }}
+                style={{ borderRadius: 10 }}
               />
               <Button
                 size="lg"
                 onClick={handleLoadMore}
-                className="relative bg-white dark:bg-[#0D2B52] text-black dark:text-white hover:text-white dark:hover:text-black hover:bg-[#0D2B52] dark:hover:bg-[#B9DDFF] border-0 px-8 py-6 text-lg font-medium transition-colors duration-200"
-                style={{ borderRadius: 0 }}
+                className="relative bg-white dark:bg-[#1B3644] text-black dark:text-white hover:text-white dark:hover:text-black hover:bg-[#1B3644] dark:hover:bg-[#B9DDFF] border-0 px-8 py-6 text-lg font-medium transition-colors duration-200"
+                style={{ borderRadius: 10 }}
               >
                 <span className="relative z-10 flex items-center">
                   Показать больше проектов

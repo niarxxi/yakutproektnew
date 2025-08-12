@@ -131,7 +131,7 @@ function ImageModal({ isOpen, onClose, imageUrl, alt }: {
   );
 }
 
-// Компонент медиа контента
+// Компонент медиа контента (без изменений)
 function MediaContent({ post, onImageClick }: { post: TelegramMessage; onImageClick: (url: string, alt: string) => void }) {
   const handleClick = (url: string, alt: string) => {
     onImageClick(url, alt);
@@ -290,15 +290,16 @@ function MediaContent({ post, onImageClick }: { post: TelegramMessage; onImageCl
   return null;
 }
 
-// Компонент поста
+// Компонент поста (ИЗМЕНЁННЫЙ)
 function PostItem({ post, isExpanded, onToggleExpansion, onImageClick }: {
   post: TelegramMessage;
   isExpanded: boolean;
   onToggleExpansion: () => void;
   onImageClick: (url: string, alt: string) => void;
 }) {
-  const postText = post.text || post.caption;
-  const hasLongText = post.text && post.text.length > 150;
+  // Теперь учитываем и text, и caption!
+  const postText = post.text || post.caption || "";
+  const hasLongText = postText.length > 150;
 
   return (
     <motion.div
@@ -358,7 +359,7 @@ function PostItem({ post, isExpanded, onToggleExpansion, onImageClick }: {
   );
 }
 
-// Основной компонент
+// Основной компонент (без изменений)
 export function News() {
   const {
     posts,

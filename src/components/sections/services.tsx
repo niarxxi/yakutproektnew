@@ -1,10 +1,18 @@
-"use client"
+"use client";
 
-import { useState, memo, useCallback } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Building2, Ruler, FileSpreadsheet, Compass, Lightbulb, Workflow, X } from "lucide-react"
-import { Button } from "@/src/components/ui/button"
-import { GlassCard } from "@/src/components/common/glass-card"
+import { useState, memo, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Building2,
+  Ruler,
+  FileSpreadsheet,
+  Compass,
+  Lightbulb,
+  Workflow,
+  X,
+} from "lucide-react";
+import { Button } from "@/src/components/ui/button";
+import { GlassCard } from "@/src/components/common/glass-card";
 import {
   MorphingDialog,
   MorphingDialogTrigger,
@@ -14,133 +22,148 @@ import {
   MorphingDialogClose,
   MorphingDialogDescription,
   MorphingDialogContainer,
-} from "@/src/components/ui/morphing-dialog"
+} from "@/src/components/ui/morphing-dialog";
 
 const services = [
   {
     icon: <Building2 className="h-8 w-8 text-blue-600" />,
     title: "Архитектурное проектирование",
-    description: "Разработка архитектурных концепций и проектной документации для зданий различного назначения",
+    description:
+      "Разработка архитектурных концепций и проектной документации для зданий различного назначения",
     details:
       "Наша команда архитекторов разрабатывает уникальные проекты, учитывающие все пожелания заказчика, особенности участка и климатические условия региона. Мы создаем функциональные и эстетически привлекательные решения для жилых, общественных и промышленных зданий.",
   },
   {
     icon: <Ruler className="h-8 w-8 text-blue-600" />,
     title: "Конструктивные решения",
-    description: "Проектирование конструктивных элементов зданий с учетом климатических и сейсмических особенностей",
+    description:
+      "Проектирование конструктивных элементов зданий с учетом климатических и сейсмических особенностей",
     details:
       "Наши инженеры-конструкторы разрабатывают надежные и экономичные конструктивные решения, учитывающие особенности вечной мерзлоты и сейсмической активности региона. Мы используем современные методы расчета и моделирования для обеспечения безопасности и долговечности зданий.",
   },
   {
     icon: <FileSpreadsheet className="h-8 w-8 text-blue-600" />,
     title: "Инженерные системы",
-    description: "Проектирование инженерных сетей: отопление, вентиляция, водоснабжение, канализация, электроснабжение",
+    description:
+      "Проектирование инженерных сетей: отопление, вентиляция, водоснабжение, канализация, электроснабжение",
     details:
       "Мы проектируем все виды инженерных систем для зданий и сооружений: отопление, вентиляцию и кондиционирование, водоснабжение и канализацию, электроснабжение и освещение, слаботочные системы. Наши решения обеспечивают комфорт, энергоэффективность и надежность.",
   },
   {
     icon: <Compass className="h-8 w-8 text-blue-600" />,
     title: "Генеральное планирование",
-    description: "Разработка генеральных планов территорий, планировка земельных участков",
+    description:
+      "Разработка генеральных планов территорий, планировка земельных участков",
     details:
       "Наши специалисты разрабатывают генеральные планы территорий различного назначения, от частных участков до крупных промышленных комплексов. Мы учитываем особенности рельефа, инженерно-геологические условия, существующую застройку и инфраструктуру.",
   },
   {
     icon: <Lightbulb className="h-8 w-8 text-blue-600" />,
     title: "Энергоэффективность",
-    description: "Проектирование с учетом современных требований энергоэффективности и экологичности",
+    description:
+      "Проектирование с учетом современных требований энергоэффективности и экологичности",
     details:
       "Мы разрабатываем энергоэффективные решения, позволяющие снизить эксплуатационные расходы и уменьшить негативное воздействие на окружающую среду. Наши проекты соответствуют современным требованиям по энергосбережению и могут быть сертифицированы по стандартам зеленого строительства.",
   },
   {
     icon: <Workflow className="h-8 w-8 text-blue-600" />,
     title: "Авторский надзор",
-    description: "Контроль соответствия выполняемых строительных работ проектной документации",
+    description:
+      "Контроль соответствия выполняемых строительных работ проектной документации",
     details:
       "Наши специалисты осуществляют авторский надзор на всех этапах строительства, контролируя соответствие выполняемых работ проектной документации. Мы оперативно решаем возникающие вопросы, вносим необходимые корректировки и обеспечиваем высокое качество реализации проекта.",
   },
-]
+];
 
-const AllServicesModal = memo(({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80"
-          onClick={onClose}
-        >
+const AllServicesModal = memo(
+  ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+    return (
+      <AnimatePresence>
+        {isOpen && (
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="bg-white dark:bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80"
+            onClick={onClose}
           >
-            <div className="relative">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-4 right-4 z-10 bg-white/80 dark:bg-gray-900/80 hover:bg-white dark:hover:bg-gray-900"
-                onClick={onClose}
-              >
-                <X className="h-4 w-4" />
-              </Button>
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="bg-white dark:bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-4 right-4 z-10 bg-white/80 dark:bg-gray-900/80 hover:bg-white dark:hover:bg-gray-900"
+                  onClick={onClose}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
 
-              <div className="p-8">
-                <div className="mb-8">
-                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Наши услуги</h2>
-                  <p className="text-gray-600 dark:text-gray-300 text-lg">
-                    Полный комплекс услуг по проектированию объектов различного назначения
-                  </p>
-                </div>
+                <div className="p-8">
+                  <div className="mb-8">
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                      Наши услуги
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-300 text-lg">
+                      Полный комплекс услуг по проектированию объектов
+                      различного назначения
+                    </p>
+                  </div>
 
-                <div className="overflow-y-auto max-h-[60vh] pr-2 custom-scrollbar">
-                  <div className="space-y-8">
-                    {services.map((service, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="border-b border-gray-200 dark:border-gray-700 pb-6 last:border-0"
-                      >
-                        <div className="flex items-start gap-4">
-                          <div className="mt-1">{service.icon}</div>
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-xl text-gray-900 dark:text-white mb-2">
-                              {service.title}
-                            </h3>
-                            <p className="text-gray-600 dark:text-gray-300 mb-3">{service.description}</p>
-                            <p className="text-gray-700 dark:text-gray-400 leading-relaxed">{service.details}</p>
+                  <div className="overflow-y-auto max-h-[60vh] pr-2 custom-scrollbar">
+                    <div className="space-y-8">
+                      {services.map((service, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="border-b border-gray-200 dark:border-gray-700 pb-6 last:border-0"
+                        >
+                          <div className="flex items-start gap-4">
+                            <div className="mt-1">{service.icon}</div>
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-xl text-gray-900 dark:text-white mb-2">
+                                {service.title}
+                              </h3>
+                              <p className="text-gray-600 dark:text-gray-300 mb-3">
+                                {service.description}
+                              </p>
+                              <p className="text-gray-700 dark:text-gray-400 leading-relaxed">
+                                {service.details}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </motion.div>
-                    ))}
+                        </motion.div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  )
-})
+        )}
+      </AnimatePresence>
+    );
+  }
+);
 
 export const Services = memo(() => {
-  const [isAllServicesOpen, setIsAllServicesOpen] = useState(false)
+  const [isAllServicesOpen, setIsAllServicesOpen] = useState(false);
 
   const handleMoreServicesClick = useCallback(() => {
-    setIsAllServicesOpen(true)
-  }, [])
+    setIsAllServicesOpen(true);
+  }, []);
 
   const handleCloseAllServicesModal = useCallback(() => {
-    setIsAllServicesOpen(false)
-  }, [])
+    setIsAllServicesOpen(false);
+  }, []);
 
   return (
     <section id="services" className="relative py-20 overflow-hidden">
@@ -154,10 +177,12 @@ export const Services = memo(() => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">Наши услуги</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+            Наши услуги
+          </h2>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Предоставляем полный комплекс услуг по проектированию объектов различного назначения, от концепции до
-            реализации
+            Предоставляем полный комплекс услуг по проектированию объектов
+            различного назначения, от концепции до реализации
           </p>
         </motion.div>
 
@@ -234,15 +259,31 @@ export const Services = memo(() => {
           viewport={{ once: true }}
           className="text-center"
         >
-          <Button size="lg" variant="outline" onClick={handleMoreServicesClick}>
-            Узнать больше о наших услугах
-          </Button>
+          <div className="relative group inline-block">
+            <div
+              className="absolute -inset-0.5 bg-gradient-to-r from-[#0D2B52] to-[#1B3644] dark:from-[#B9DDFF] dark:to-white blur opacity-60 group-hover:opacity-100 transition duration-200"
+              style={{ borderRadius: 10 }}
+            />
+            <Button
+              size="lg"
+              onClick={handleMoreServicesClick}
+              className="relative bg-white dark:bg-[#1B3644] text-black dark:text-white hover:text-white dark:hover:text-black hover:bg-[#1B3644] dark:hover:bg-[#B9DDFF] border-0 px-8 py-6 text-lg font-medium transition-colors duration-200"
+              style={{ borderRadius: 10 }}
+            >
+              <span className="relative z-10 flex items-center">
+                Узнать больше о наших услугах
+              </span>
+            </Button>
+          </div>
         </motion.div>
       </div>
 
-      <AllServicesModal isOpen={isAllServicesOpen} onClose={handleCloseAllServicesModal} />
+      <AllServicesModal
+        isOpen={isAllServicesOpen}
+        onClose={handleCloseAllServicesModal}
+      />
     </section>
-  )
-})
+  );
+});
 
-Services.displayName = "Services"
+Services.displayName = "Services";
