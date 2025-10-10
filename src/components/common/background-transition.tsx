@@ -30,9 +30,8 @@ export function BackgroundTransition() {
 
     const heights: any = {}
     Object.entries(sections).forEach(([key, element]) => {
-      if (element) {
-        heights[key] = element.offsetHeight
-      }
+      // Устанавливаем 0 если элемент не найден
+      heights[key] = element ? element.offsetHeight : 0
     })
 
     setSectionHeights(heights)
@@ -83,8 +82,16 @@ export function BackgroundTransition() {
   // Мемоизируем функцию создания переходов
   const createTransition = useCallback(
     (fromSection: keyof typeof cumulativeHeights, toSection: keyof typeof cumulativeHeights) => {
-      const start = cumulativeHeights[fromSection] + sectionHeights[fromSection] * 0.5
-      const end = cumulativeHeights[toSection] + sectionHeights[toSection] * 0.3
+      const fromHeight = sectionHeights[fromSection]
+      const toHeight = sectionHeights[toSection]
+      
+      // Если секции не существуют, возвращаем нулевые значения
+      if (fromHeight === 0 && toHeight === 0) {
+        return { start: 0, end: 0 }
+      }
+      
+      const start = cumulativeHeights[fromSection] + fromHeight * 0.5
+      const end = cumulativeHeights[toSection] + toHeight * 0.3
       return { start, end }
     },
     [cumulativeHeights, sectionHeights],
@@ -189,9 +196,11 @@ export function BackgroundTransition() {
       </motion.div>
 
       {/* Partners фон - дополнительный цвет 2 */}
-      <motion.div className="fixed inset-0 z-[-2] pointer-events-none" style={{ opacity: partnersOpacity }}>
-        <div className="absolute inset-0 bg-gradient-to-br from-[#B9DDFF] to-[#DEDEBE] dark:from-[#1B3644] dark:to-[#303030]" />
-      </motion.div>
+      {sectionHeights.partners > 0 && (
+        <motion.div className="fixed inset-0 z-[-2] pointer-events-none" style={{ opacity: partnersOpacity }}>
+          <div className="absolute inset-0 bg-gradient-to-br from-[#B9DDFF] to-[#DEDEBE] dark:from-[#1B3644] dark:to-[#303030]" />
+        </motion.div>
+      )}
 
       {/* Contacts фон - основной цвет */}
       <motion.div className="fixed inset-0 z-[-2] pointer-events-none" style={{ opacity: contactsOpacity }}>
